@@ -1153,20 +1153,31 @@ function saveGame() {
         }
 
         function loadGame() {
-            const savedData = localStorage.getItem('kingdomForgeSave');
-            if (savedData) {
-                try {
-                    const parsed = JSON.parse(savedData);
-                    G = Object.assign(G, parsed);
-                    // Fallbacks for older saves
-                    G.achieved = G.achieved || [];
-                    G.achClaimed = G.achClaimed || [];
-                    G.lastTick = Date.now();
-                } catch (e) {
-                    console.error("Failed to load save", e);
-                }
-            }
-        }
+  const savedData = localStorage.getItem('kingdomForgeSave');
+  if (savedData) {
+    try {
+      const parsed = JSON.parse(savedData);
+      G = Object.assign(G, parsed);
+      
+      // Fallbacks for older saves
+      G.achieved = G.achieved || [];
+      G.achClaimed = G.achClaimed || [];
+      
+      // FIX: Automatically expand old 16-slot saves into the new 60-slot empire
+      if (G.buildings.length < 60) {
+        const currentLength = G.buildings.length;
+        const newSlots = Array.from({ length: 60 - currentLength }, (_, i) => ({ 
+            slot: currentLength + i, type: null, constructionEnd: null, constructionDuration: null 
+        }));
+        G.buildings = G.buildings.concat(newSlots);
+      }
+      
+      G.lastTick = Date.now();
+    } catch (e) {
+      console.error("Failed to load save", e);
+    }
+  }
+}
 
 
 // ═══════════════ CASTLE LEVELS ═══════════════
