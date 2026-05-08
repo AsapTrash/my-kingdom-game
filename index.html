@@ -1257,7 +1257,7 @@ function tick(){
     const d=BD[b.type];if(!d)return;
     G.gold+=d.pg*b.level*dt; G.food+=d.pf*b.level*dt;
   });
-  G.gold=Math.min(G.gold,99999); G.food=Math.min(G.food,9999);
+  
   // castle upgrade done?
   if(G.castleUpgrading&&now>=G.castleUpgrading){
     G.castleUpgrading=null; G.castleLevel++;
