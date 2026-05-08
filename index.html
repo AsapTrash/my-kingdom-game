@@ -1481,8 +1481,16 @@ function openBInfo(idx){
   const b=G.buildings[idx], d=BD[b.type];
   const uc=Math.floor(d.gc*1.6*b.level), ut=Math.floor(d.bt*b.level*1.5);
   const ml=maxBLevel(), atMax=b.level>=ml;
-  const canU=!atMax&&G.gold>=uc;
+  const canU=!atMax && Number(G.gold)>=uc;
   const prod=d.pg>0?`+${d.pg*b.level}/s 🪙`:d.pf>0?`+${d.pf*b.level}/s 🌾`:'Passive';
+  
+  // Clean HTML upgrade button logic
+  let upgBtn = '';
+  if (!atMax) {
+      if (canU) { upgBtn = `<button class="gb gld" onclick="upgB(${idx})">⬆ Upgrade</button>`; }
+      else { upgBtn = `<button class="gb gld" onclick="showToast('Not enough gold!')" style="opacity:.45">⬆ Upgrade</button>`; }
+  }
+  
   showModal(`
     <span style="font-size:48px;display:block;text-align:center;margin:4px 0">${d.e}</span>
     <div class="mt">${d.n}</div><div class="msub">${d.desc}</div>
@@ -1493,7 +1501,7 @@ function openBInfo(idx){
     </div>
     <div class="br">
       <button class="gb drk" onclick="closeModal()">Close</button>
-      ${!atMax?`<button class="gb gld" onclick="${canU?`upgB(${idx})`:'showToast(\"Not enough gold!\")'}" style="${canU?'':'opacity:.45'}">⬆ Upgrade</button>`:''}
+      ${upgBtn}
     </div>
   `);
 }
