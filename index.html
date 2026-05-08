@@ -1118,8 +1118,9 @@
 
     <script>
 // ═══════════════ STATE ═══════════════
-const G={
-  gold:1200,food:480,gems:250,trophies:140,
+// ═══════════════ STATE ═══════════════
+let G={
+  gold:350,food:0,gems:250,trophies:0,
   lastTick:Date.now(),
   castleLevel:1,
   castleUpgrading:null,
@@ -1135,16 +1136,16 @@ const G={
     {id:'dragon',name:'Dragon Rider', emoji:'🐉',level:0,xp:0, xpNeeded:500,power:400,unlocked:false,ability:"Dragon's Breath"},
   ],
   clan:{name:'Iron Wolves',tag:'#IW2X9K',level:4,members:[
-    {name:'You',emoji:'🫵',trophies:140,rank:'Leader'},
+    {name:'You',emoji:'🫵',trophies:0,rank:'Leader'},
     {name:'Thornwood',emoji:'⚔️',trophies:380,rank:'Co-Leader'},
     {name:'Lady Sera',emoji:'👸',trophies:260,rank:'Elder'},
     {name:'GrimAxe',emoji:'🪓',trophies:190,rank:'Member'},
     {name:'SilverFox',emoji:'🦊',trophies:155,rank:'Member'},
     {name:'BoulderFist',emoji:'🪨',trophies:120,rank:'Member'},
   ]},
-    selTroop: 'swordsman',
-    achieved: [],
-    achClaimed: []
+  selTroop: 'swordsman',
+  achieved: [],
+  achClaimed: []
 };
 
 // ═══════════════ SAVE/LOAD SYSTEM ═══════════════
@@ -1275,6 +1276,7 @@ const ACH = [
 
 
 // ═══════════════ TICK ═══════════════
+// ═══════════════ TICK ═══════════════
 function tick(){
   const now=Date.now(), dt=(now-G.lastTick)/1000;
   G.lastTick=now;
@@ -1298,6 +1300,7 @@ function tick(){
   });
   checkAch();
   updateUI();renderBuildings();
+  saveGame(); // <- The missing save function!
   setTimeout(tick,1000);
 }
 
@@ -1375,8 +1378,9 @@ function showModal(html,center=false){
 }
 
 // ═══════════════ CASTLE ═══════════════
+// ═══════════════ CASTLE ═══════════════
 function openCastle(){
-  const lvl=G.castleLevel, cfg=cc(lvl), nxt=cc(lvl+1), maxed=lvl>=5;
+  const lvl=G.castleLevel, cfg=cc(lvl), nxt=cc(lvl+1), maxed=lvl>=20;
   const canUpg=!maxed&&G.gold>=cfg.upgCost&&!G.castleUpgrading;
   const nextInfo=maxed?'All content unlocked!':`+${nxt.slots-cfg.slots} slots · New buildings`;
   showModal(`
@@ -1384,7 +1388,7 @@ function openCastle(){
     <div class="mt">Castle — Level ${lvl}</div>
     <div class="msub">${cfg.label}</div>
     <div style="margin:8px 0">
-      <div class="sr"><span class="sl">Building Slots</span><span class="sv">${cfg.slots} / 16</span></div>
+      <div class="sr"><span class="sl">Building Slots</span><span class="sv">${cfg.slots} / 60</span></div>
       <div class="sr"><span class="sl">Max Building Level</span><span class="sv">${maxBLevel()}</span></div>
       ${!maxed?`
       <div class="sr"><span class="sl">Upgrade Cost</span><span class="sv">🪙 ${cfg.upgCost.toLocaleString()}</span></div>
@@ -1399,7 +1403,6 @@ function openCastle(){
     </div>
   `);
   if(!maxed&&!canUpg){
-    // attach click handler for feedback
     const btn=AM.querySelector('.gb.gld');
     if(btn)btn.onclick=()=>showToast(`Need 🪙${cfg.upgCost.toLocaleString()} & no active upgrade!`);
   }
