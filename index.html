@@ -1170,16 +1170,31 @@ function saveGame() {
 
 
 // ═══════════════ CASTLE LEVELS ═══════════════
-const CL={
-  1:{slots:6, allowed:['goldmine','farm','barracks'],                                    upgCost:500,  upgTime:60,   label:'Wooden Keep'},
-  2:{slots:9, allowed:['goldmine','farm','barracks','tower'],                             upgCost:1500, upgTime:180,  label:'Stone Fort'},
-  3:{slots:12,allowed:['goldmine','farm','barracks','tower','market','stable'],           upgCost:4000, upgTime:600,  label:'Iron Fortress'},
-  4:{slots:16,allowed:['goldmine','farm','barracks','tower','market','stable','forge','wizard'],upgCost:10000,upgTime:1800,label:'Grand Citadel'},
-  5:{slots:16,allowed:'all',upgCost:null,upgTime:0,label:'Eternal Bastion'},
+const CL = {
+  1: { slots: 6, allowed: ['goldmine', 'farm', 'barracks'], upgCost: 500, upgTime: 60, label: 'Shanty' },
+  2: { slots: 9, allowed: ['goldmine', 'farm', 'barracks', 'tower'], upgCost: 1500, upgTime: 120, label: 'Encampment' },
+  3: { slots: 12, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market'], upgCost: 4000, upgTime: 240, label: 'Wooden Shack' },
+  4: { slots: 16, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market', 'stable'], upgCost: 10000, upgTime: 300, label: 'Hamlet' }, // 10k & 5 Min Wall
+  5: { slots: 20, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market', 'stable', 'forge'], upgCost: 25000, upgTime: 900, label: 'Village Square' },
+  6: { slots: 24, allowed: 'all', upgCost: 50000, upgTime: 1800, label: 'Stone Outpost' }, // 30 Mins
+  7: { slots: 28, allowed: 'all', upgCost: 100000, upgTime: 3600, label: 'Palisade Fort' }, // 1 Hr
+  8: { slots: 32, allowed: 'all', upgCost: 250000, upgTime: 7200, label: 'Iron Bastion' }, // 2 Hrs
+  9: { slots: 36, allowed: 'all', upgCost: 500000, upgTime: 14400, label: 'Grand Fort' }, // 4 Hrs
+  10: { slots: 40, allowed: 'all', upgCost: 1000000, upgTime: 28800, label: 'Fortress' }, // 8 Hrs
+  11: { slots: 44, allowed: 'all', upgCost: 2500000, upgTime: 43200, label: 'Citadel' }, // 12 Hrs
+  12: { slots: 48, allowed: 'all', upgCost: 5000000, upgTime: 64800, label: 'Grand Citadel' }, // 18 Hrs
+  13: { slots: 52, allowed: 'all', upgCost: 10000000, upgTime: 86400, label: 'Castle' }, // 1 Day
+  14: { slots: 56, allowed: 'all', upgCost: 25000000, upgTime: 172800, label: 'High Castle' }, // 2 Days
+  15: { slots: 60, allowed: 'all', upgCost: 50000000, upgTime: 259200, label: 'Royal Palace' }, // 3 Days
+  16: { slots: 60, allowed: 'all', upgCost: 100000000, upgTime: 345600, label: 'Capital City' }, // 4 Days
+  17: { slots: 60, allowed: 'all', upgCost: 250000000, upgTime: 432000, label: 'Royal Dominion' }, // 5 Days
+  18: { slots: 60, allowed: 'all', upgCost: 500000000, upgTime: 604800, label: 'Imperial Metropolis' }, // 7 Days
+  19: { slots: 60, allowed: 'all', upgCost: 1000000000, upgTime: 864000, label: 'Sovereign Empire' }, // 10 Days
+  20: { slots: 60, allowed: 'all', upgCost: null, upgTime: 0, label: 'Eternal Kingdom' },
 };
-const cc=l=>CL[Math.min(l,5)];
-const isAllowed=t=>t==='castle'||cc(G.castleLevel).allowed==='all'||cc(G.castleLevel).allowed.includes(t);
-const maxBLevel=()=>3+G.castleLevel;
+const cc = l => CL[Math.min(l, 20)]; // Updated to check against 20 instead of 5
+const isAllowed = t => t === 'castle' || cc(G.castleLevel).allowed === 'all' || cc(G.castleLevel).allowed.includes(t);
+const maxBLevel = () => 3 + G.castleLevel;
 
 // ═══════════════ BUILDING DEFS ═══════════════
 const BD={
