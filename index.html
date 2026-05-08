@@ -105,14 +105,17 @@
         
 /* WORLD */
 #world{position:fixed;top:54px;bottom:114px;left:0;right:0;overflow-y:auto;background:radial-gradient(ellipse at 50% 80%,#1a3020 0%,transparent 60%),radial-gradient(ellipse at 20% 20%,#1a2530 0%,transparent 50%),linear-gradient(180deg,#0d1520,#0d1a10)}
-#world::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px),repeating-linear-gradient(90deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px);pointer-events:none;min-height:100%}
-#world-inner{position:relative;min-height:100%;display:grid;gap:5px;padding:8px;padding-bottom:24px}
+#world::before{content:'';position:fixed;top:54px;bottom:114px;left:0;right:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px),repeating-linear-gradient(90deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px);pointer-events:none;z-index:0}
+/* Fix: world-inner is relative for scroll layout; trees use a separate fixed overlay rendered in JS */
+#world-inner{position:relative;min-height:100%;display:grid;gap:5px;padding:8px;padding-bottom:24px;z-index:1}
+.deco-tree-overlay{position:fixed;top:54px;bottom:114px;left:0;right:0;pointer-events:none;z-index:2}
 
         .deco-tree {
             position: absolute;
             font-size: 22px;
             pointer-events: none;
-            animation: sway 4s ease-in-out infinite
+            animation: sway 4s ease-in-out infinite;
+            z-index: 2
         }
 
         @keyframes sway {
@@ -1276,7 +1279,6 @@ const ACH = [
 
 
 // ═══════════════ TICK ═══════════════
-// ═══════════════ TICK ═══════════════
 function tick(){
   const now=Date.now(), dt=(now-G.lastTick)/1000;
   G.lastTick=now;
@@ -1285,7 +1287,12 @@ function tick(){
     const d=BD[b.type];if(!d)return;
     G.gold+=d.pg*b.level*dt; G.food+=d.pf*b.level*dt;
   });
-  
+  // Fix #8: cap resources so they don't grow forever
+  const maxGold = 5000 * Math.pow(2, G.castleLevel - 1);
+  const maxFood = 2000 * Math.pow(2, G.castleLevel - 1);
+  G.gold = Math.min(G.gold, maxGold);
+  G.food = Math.min(G.food, maxFood);
+
   // castle upgrade done?
   if(G.castleUpgrading&&now>=G.castleUpgrading){
     G.castleUpgrading=null; G.castleLevel++;
@@ -1300,7 +1307,7 @@ function tick(){
   });
   checkAch();
   updateUI();renderBuildings();
-  saveGame(); // <- The missing save function!
+  saveGame();
   setTimeout(tick,1000);
 }
 
@@ -1309,14 +1316,21 @@ function updateUI() {
   document.getElementById('gval').textContent = fmt(G.gold);
   document.getElementById('fval').textContent = fmt(G.food);
   document.getElementById('mval').textContent = fmt(G.gems);
-  // cbadge has been completely removed from here!
 }
 
 function fmt(n) {
   if (n < 1000) return Math.floor(n).toString();
   if (n < 1000000) return (n / 1000).toFixed(1).replace('.0', '') + 'k';
   if (n < 1000000000) return (n / 1000000).toFixed(2).replace('.00', '') + 'M';
-  return (n / 1000000000).toFixed(2).replace('.00', '') + 'B'; 
+  return (n / 1000000000).toFixed(2).replace('.00', '') + 'B';
+}
+function fmtT(ms) {
+  if (ms <= 0) return 'Done!';
+  const s = Math.floor(ms / 1000), m = Math.floor(s / 60), h = Math.floor(m / 60), d = Math.floor(h / 24);
+  if (d > 0) return `${d}d ${h % 24}h`;
+  if (h > 0) return `${h}h ${m % 60}m`;
+  if (m > 0) return `${m}m ${s % 60}s`;
+  return `${s}s`;
 }
 function bump(id){const e=document.getElementById(id);e.classList.add('bump');setTimeout(()=>e.classList.remove('bump'),280);}
 
@@ -1326,7 +1340,7 @@ function renderBuildings(){
   const unlocked=cc(G.castleLevel).slots;
   const cols=G.castleLevel>=3?4:3;
   wi.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-  wi.style.gridTemplateRows=`repeat(${Math.ceil(60/cols)},1fr)`;
+  wi.style.gridTemplateRows=`repeat(${Math.ceil(G.buildings.length/cols)},1fr)`;
   wi.innerHTML='';
   G.buildings.forEach((b,i)=>{
     const s=document.createElement('div'); s.className='bs';
@@ -1358,10 +1372,18 @@ function renderBuildings(){
     }
     wi.appendChild(s);
   });
-  // deco trees
+  // Fix #5: render trees in a fixed overlay so they aren't affected by scrolling world-inner
+  let treeOverlay = document.getElementById('tree-overlay');
+  if (!treeOverlay) {
+    treeOverlay = document.createElement('div');
+    treeOverlay.id = 'tree-overlay';
+    treeOverlay.className = 'deco-tree-overlay';
+    document.body.appendChild(treeOverlay);
+  }
+  treeOverlay.innerHTML = '';
   [{x:3,y:28},{x:89,y:18},{x:76,y:70},{x:5,y:66}].forEach(t=>{
     const el=document.createElement('div');el.className='deco-tree';
-    el.style.cssText=`left:${t.x}%;top:${t.y}%`;el.textContent='🌲';wi.appendChild(el);
+    el.style.cssText=`left:${t.x}%;top:${t.y}%`;el.textContent='🌲';treeOverlay.appendChild(el);
   });
 }
 
@@ -1378,17 +1400,22 @@ function showModal(html,center=false){
 }
 
 // ═══════════════ CASTLE ═══════════════
-// ═══════════════ CASTLE ═══════════════
 function openCastle(){
-  const lvl=G.castleLevel, cfg=cc(lvl), nxt=cc(lvl+1), maxed=lvl>=20;
+  const lvl=G.castleLevel, cfg=cc(lvl), maxed=lvl>=20;
+  // Fix: guard against calling cc(lvl+1) at max level
+  const nxt = maxed ? cfg : cc(lvl+1);
   const canUpg=!maxed && Number(G.gold)>=cfg.upgCost && !G.castleUpgrading;
   const nextInfo=maxed?'All content unlocked!':`+${nxt.slots-cfg.slots} slots · New buildings`;
-  
-  // Clean HTML button logic
+  // Fix: pre-compute cost string so it interpolates correctly inside HTML attributes
+  const costStr = maxed ? '' : cfg.upgCost.toLocaleString();
+
   let upgBtn = '';
   if (!maxed) {
-      if (canUpg) { upgBtn = `<button class="gb gld" onclick="upgCastle()">⬆ Upgrade Castle</button>`; }
-      else { upgBtn = `<button class="gb gld" onclick="showToast('Need 🪙${cfg.upgCost.toLocaleString()}')" style="opacity:.45">⬆ Upgrade Castle</button>`; }
+    if (canUpg) {
+      upgBtn = `<button class="gb gld" onclick="upgCastle()">⬆ Upgrade Castle</button>`;
+    } else {
+      upgBtn = `<button class="gb gld" onclick="showToast('Need 🪙${costStr} & no active upgrade!')" style="opacity:.45">⬆ Upgrade Castle</button>`;
+    }
   }
 
   showModal(`
@@ -1411,11 +1438,6 @@ function openCastle(){
     </div>
   `);
 }
-  if(!maxed&&!canUpg){
-    const btn=AM.querySelector('.gb.gld');
-    if(btn)btn.onclick=()=>showToast(`Need 🪙${cfg.upgCost.toLocaleString()} & no active upgrade!`);
-  }
-}
 function upgCastle(){
   const cfg=cc(G.castleLevel);
   G.gold-=cfg.upgCost;
@@ -1423,7 +1445,7 @@ function upgCastle(){
   G.castleUpgrading=Date.now()+dur;
   const cb=G.buildings.find(b=>b.type==='castle');
   if(cb){cb.constructionEnd=G.castleUpgrading;cb.constructionDuration=dur;}
-  closeModal();showToast(`Castle upgrading to Lv${G.castleLevel+1}! ⚒️`);updateUI();renderBuildings();
+  closeModal();showToast(`Castle upgrading to Lv${G.castleLevel+1}! ⚒️`);updateUI();renderBuildings();saveGame();
 }
 function openCastleSpeedup(){
   if(!G.castleUpgrading)return;
@@ -1442,12 +1464,12 @@ function cspeed(ms,cost){
   if(G.gems<cost){showToast('Not enough gems!');return;}
   G.gems-=cost;G.castleUpgrading-=ms;
   const cb=G.buildings.find(b=>b.type==='castle');if(cb)cb.constructionEnd=G.castleUpgrading;
-  closeModal();showToast('Speed boost applied! ⚡');bump('mchip');spawnP('⚡',3);updateUI();renderBuildings();
+  closeModal();showToast('Speed boost applied! ⚡');bump('mchip');spawnP('⚡',3);updateUI();renderBuildings();saveGame();
 }
 function cfin(cost){
   if(G.gems<cost){showToast('Not enough gems!');return;}
   G.gems-=cost;G.castleUpgrading=Date.now()-1;
-  closeModal();showToast('Castle complete! 🎉');spawnP('🏰',5);updateUI();renderBuildings();
+  closeModal();showToast('Castle complete! 🎉');spawnP('🏰',5);updateUI();renderBuildings();saveGame();
 }
 
 // ═══════════════ BUILD MENU ═══════════════
@@ -1473,7 +1495,7 @@ function startBuild(idx,type){
   const d=BD[type]; G.gold-=d.gc; G.food-=d.fc;
   const dur=d.bt*1000;
   const b=G.buildings[idx]; b.type=type;b.level=0;b.constructionEnd=Date.now()+dur;b.constructionDuration=dur;
-  closeModal();showToast(`Building ${d.n}… ⚒️`);spawnP('🪙',2);updateUI();renderBuildings();
+  closeModal();showToast(`Building ${d.n}… ⚒️`);spawnP('🪙',2);updateUI();renderBuildings();saveGame();
 }
 
 // ═══════════════ BUILDING INFO ═══════════════
@@ -1509,7 +1531,7 @@ function upgB(idx){
   const b=G.buildings[idx], d=BD[b.type];
   const cost=Math.floor(d.gc*1.6*b.level), dur=Math.floor(d.bt*b.level*1.5)*1000;
   G.gold-=cost; b.constructionEnd=Date.now()+dur; b.constructionDuration=dur;
-  closeModal();showToast(`Upgrading ${d.n} to Lv${b.level+1}…`);updateUI();renderBuildings();
+  closeModal();showToast(`Upgrading ${d.n} to Lv${b.level+1}…`);updateUI();renderBuildings();saveGame();
 }
 
 // ═══════════════ SPEEDUP ═══════════════
@@ -1527,13 +1549,13 @@ function openSpeedup(idx){
 function useSpeedup(idx,ms,cost){
   if(G.gems<cost){showToast('Not enough gems!');return;}
   G.gems-=cost; G.buildings[idx].constructionEnd-=ms;
-  closeModal();showToast('Speed boost applied! ⚡');bump('mchip');spawnP('⚡',3);updateUI();renderBuildings();
+  closeModal();showToast('Speed boost applied! ⚡');bump('mchip');spawnP('⚡',3);updateUI();renderBuildings();saveGame();
 }
 function finNow(idx,cost){
   if(G.gems<cost){showToast('Not enough gems!');return;}
   G.gems-=cost;
   const b=G.buildings[idx];b.constructionEnd=null;b.level=(b.level||0)+1;
-  closeModal();showToast('Construction complete! 🎉');spawnP('✨',4);bump('mchip');updateUI();renderBuildings();
+  closeModal();showToast('Construction complete! 🎉');spawnP('✨',4);bump('mchip');updateUI();renderBuildings();saveGame();
 }
 
 // ═══════════════ TROOPS ═══════════════
@@ -1623,7 +1645,7 @@ function openHD(i){
 function upgH(i){
   const h=G.heroes[i]; G.gems-=h.level*80;
   h.level++;h.xp=0;h.xpNeeded=Math.floor(h.xpNeeded*1.5);
-  closeModal();showToast(`${h.name} → Level ${h.level}! 🌟`);spawnP('🌟',5);updateUI();
+  closeModal();showToast(`${h.name} → Level ${h.level}! 🌟`);spawnP('🌟',5);updateUI();saveGame();
 }
 function earnXP(i){G.heroes[i].xp=Math.min(G.heroes[i].xpNeeded,G.heroes[i].xp+15);closeModal();openHD(i);showToast('+15 XP!');}
 function openHU(i){
@@ -1633,7 +1655,7 @@ function openHU(i){
 function unlkH(i,cost){
   if(G.gems<cost){showToast('Not enough gems!');return;}
   G.gems-=cost;G.heroes[i].unlocked=true;G.heroes[i].level=1;
-  closeModal();showToast(`${G.heroes[i].name} joins! 🎉`);spawnP('⚔️',4);updateUI();
+  closeModal();showToast(`${G.heroes[i].name} joins! 🎉`);spawnP('⚔️',4);updateUI();saveGame();
 }
 
 // ═══════════════ CLAN ═══════════════
@@ -1854,7 +1876,7 @@ function buyItem(id){
   if(it.type==='gold'){
     if(G.gems<it.cost){showToast('Not enough gems!');return;}
     G.gems-=it.cost;G.gold+=it.amt;
-    showToast(`+${it.amt.toLocaleString()} Gold! 🪙`);bump('gchip');bump('mchip');spawnP('🪙',4);updateUI();closeModal();return;
+    showToast(`+${it.amt.toLocaleString()} Gold! 🪙`);bump('gchip');bump('mchip');spawnP('🪙',4);updateUI();closeModal();saveGame();return;
   }
   if(it.type==='spd'){
     const con=G.buildings.find(b=>b.constructionEnd&&b.type!=='castle');
@@ -1863,9 +1885,9 @@ function buyItem(id){
     G.gems-=it.cost;
     if(con)con.constructionEnd-=it.ms;
     if(G.castleUpgrading)G.castleUpgrading-=it.ms;
-    showToast('Speed boost! ⚡');bump('mchip');spawnP('⚡',3);updateUI();closeModal();return;
+    showToast('Speed boost! ⚡');bump('mchip');spawnP('⚡',3);updateUI();closeModal();saveGame();return;
   }
-  G.gems+=it.gems;showToast(`+${it.gems} Gems! 💎`);bump('mchip');spawnP('💎',4);updateUI();closeModal();
+  G.gems+=it.gems;showToast(`+${it.gems} Gems! 💎`);bump('mchip');spawnP('💎',4);updateUI();closeModal();saveGame();
 }
 
 // ═══════════════ TABS ═══════════════
