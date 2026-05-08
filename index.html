@@ -1138,7 +1138,7 @@ let G={
     {id:'mage',  name:'Storm Mage',   emoji:'🧙',level:0,xp:0, xpNeeded:200,power:180,unlocked:false,ability:'Chain Lightning'},
     {id:'dragon',name:'Dragon Rider', emoji:'🐉',level:0,xp:0, xpNeeded:500,power:400,unlocked:false,ability:"Dragon's Breath"},
   ],
-  clan:{name:'Iron Wolves',tag:'#IW2X9K',level:4,members:[
+  clan:{name:'Trash Pandas',tag:'#TP4KG2',level:4,members:[
     {name:'You',emoji:'🫵',trophies:0,rank:'Leader'},
     {name:'Thornwood',emoji:'⚔️',trophies:380,rank:'Co-Leader'},
     {name:'Lady Sera',emoji:'👸',trophies:260,rank:'Elder'},
@@ -1153,11 +1153,11 @@ let G={
 
 // ═══════════════ SAVE/LOAD SYSTEM ═══════════════
 function saveGame() {
-   localStorage.setItem('kingdomForgeSave', JSON.stringify(G));
+   localStorage.setItem('kingdomOfTrashSave', JSON.stringify(G));
         }
 
         function loadGame() {
-  const savedData = localStorage.getItem('kingdomForgeSave');
+  const savedData = localStorage.getItem('kingdomOfTrashSave');
   if (savedData) {
     try {
       const parsed = JSON.parse(savedData);
@@ -1186,26 +1186,26 @@ function saveGame() {
 
 // ═══════════════ CASTLE LEVELS ═══════════════
 const CL = {
-  1: { slots: 6, allowed: ['goldmine', 'farm', 'barracks'], upgCost: 500, upgTime: 60, label: 'Shanty' },
-  2: { slots: 9, allowed: ['goldmine', 'farm', 'barracks', 'tower'], upgCost: 1500, upgTime: 120, label: 'Encampment' },
-  3: { slots: 12, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market'], upgCost: 4000, upgTime: 240, label: 'Wooden Shack' },
-  4: { slots: 16, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market', 'stable'], upgCost: 10000, upgTime: 300, label: 'Hamlet' }, // 10k & 5 Min Wall
-  5: { slots: 20, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market', 'stable', 'forge'], upgCost: 25000, upgTime: 900, label: 'Village Square' },
-  6: { slots: 24, allowed: 'all', upgCost: 50000, upgTime: 1800, label: 'Stone Outpost' }, // 30 Mins
-  7: { slots: 28, allowed: 'all', upgCost: 100000, upgTime: 3600, label: 'Palisade Fort' }, // 1 Hr
-  8: { slots: 32, allowed: 'all', upgCost: 250000, upgTime: 7200, label: 'Iron Bastion' }, // 2 Hrs
-  9: { slots: 36, allowed: 'all', upgCost: 500000, upgTime: 14400, label: 'Grand Fort' }, // 4 Hrs
-  10: { slots: 40, allowed: 'all', upgCost: 1000000, upgTime: 28800, label: 'Fortress' }, // 8 Hrs
-  11: { slots: 44, allowed: 'all', upgCost: 2500000, upgTime: 43200, label: 'Citadel' }, // 12 Hrs
-  12: { slots: 48, allowed: 'all', upgCost: 5000000, upgTime: 64800, label: 'Grand Citadel' }, // 18 Hrs
-  13: { slots: 52, allowed: 'all', upgCost: 10000000, upgTime: 86400, label: 'Castle' }, // 1 Day
-  14: { slots: 56, allowed: 'all', upgCost: 25000000, upgTime: 172800, label: 'High Castle' }, // 2 Days
-  15: { slots: 60, allowed: 'all', upgCost: 50000000, upgTime: 259200, label: 'Royal Palace' }, // 3 Days
-  16: { slots: 60, allowed: 'all', upgCost: 100000000, upgTime: 345600, label: 'Capital City' }, // 4 Days
-  17: { slots: 60, allowed: 'all', upgCost: 250000000, upgTime: 432000, label: 'Royal Dominion' }, // 5 Days
-  18: { slots: 60, allowed: 'all', upgCost: 500000000, upgTime: 604800, label: 'Imperial Metropolis' }, // 7 Days
-  19: { slots: 60, allowed: 'all', upgCost: 1000000000, upgTime: 864000, label: 'Sovereign Empire' }, // 10 Days
-  20: { slots: 60, allowed: 'all', upgCost: null, upgTime: 0, label: 'Eternal Kingdom' },
+  1: { slots: 6, allowed: ['goldmine', 'farm', 'barracks'], upgCost: 500, upgTime: 60, label: 'Garbage Heap' },
+  2: { slots: 9, allowed: ['goldmine', 'farm', 'barracks', 'tower'], upgCost: 1500, upgTime: 120, label: 'Rubbish Pile' },
+  3: { slots: 12, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market'], upgCost: 4000, upgTime: 240, label: 'Junk Yard' },
+  4: { slots: 16, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market', 'stable'], upgCost: 10000, upgTime: 300, label: 'Refuse Camp' }, // 10k & 5 Min Wall
+  5: { slots: 20, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market', 'stable', 'forge'], upgCost: 25000, upgTime: 900, label: 'Scrap Settlement' },
+  6: { slots: 24, allowed: 'all', upgCost: 50000, upgTime: 1800, label: 'Dumpster District' }, // 30 Mins
+  7: { slots: 28, allowed: 'all', upgCost: 100000, upgTime: 3600, label: 'Landfill Town' }, // 1 Hr
+  8: { slots: 32, allowed: 'all', upgCost: 250000, upgTime: 7200, label: 'Waste Borough' }, // 2 Hrs
+  9: { slots: 36, allowed: 'all', upgCost: 500000, upgTime: 14400, label: 'Sludge City' }, // 4 Hrs
+  10: { slots: 40, allowed: 'all', upgCost: 1000000, upgTime: 28800, label: 'Filth Fortress' }, // 8 Hrs
+  11: { slots: 44, allowed: 'all', upgCost: 2500000, upgTime: 43200, label: 'Decay Citadel' }, // 12 Hrs
+  12: { slots: 48, allowed: 'all', upgCost: 5000000, upgTime: 64800, label: 'Rot Palace' }, // 18 Hrs
+  13: { slots: 52, allowed: 'all', upgCost: 10000000, upgTime: 86400, label: 'Mold Metropolis' }, // 1 Day
+  14: { slots: 56, allowed: 'all', upgCost: 25000000, upgTime: 172800, label: 'Grime Capital' }, // 2 Days
+  15: { slots: 60, allowed: 'all', upgCost: 50000000, upgTime: 259200, label: 'Putrid Province' }, // 3 Days
+  16: { slots: 60, allowed: 'all', upgCost: 100000000, upgTime: 345600, label: 'Rancid Realm' }, // 4 Days
+  17: { slots: 60, allowed: 'all', upgCost: 250000000, upgTime: 432000, label: 'Fetid Federation' }, // 5 Days
+  18: { slots: 60, allowed: 'all', upgCost: 500000000, upgTime: 604800, label: 'Stench Empire' }, // 7 Days
+  19: { slots: 60, allowed: 'all', upgCost: 1000000000, upgTime: 864000, label: 'Sovereign Sewer' }, // 10 Days
+  20: { slots: 60, allowed: 'all', upgCost: null, upgTime: 0, label: 'Eternal Dumpster' },
 };
 const cc = l => CL[Math.min(l, 20)]; // Updated to check against 20 instead of 5
 const isAllowed = t => t === 'castle' || cc(G.castleLevel).allowed === 'all' || cc(G.castleLevel).allowed.includes(t);
@@ -1213,15 +1213,15 @@ const maxBLevel = () => 3 + G.castleLevel;
 
 // ═══════════════ BUILDING DEFS ═══════════════
 const BD={
-  castle:  {e:'🏰',n:'Castle',     gc:0,  fc:0,  bt:0,   cr:1,pg:0,pf:0,desc:'Seat of power. Upgrade to unlock buildings and slots.'},
+  castle:  {e:'🏰',n:'Castle',     gc:0,  fc:0,  bt:0,   cr:1,pg:0,pf:0,desc:'The rotten heart of your trash empire. Upgrade to unlock new buildings and slots.'},
   goldmine:{e:'⛏️',n:'Gold Mine',  gc:200,fc:0,  bt:30,  cr:1,pg:8,pf:0,desc:'Passively produces gold per second.'},
   farm:    {e:'🌾',n:'Farm',        gc:150,fc:0,  bt:20,  cr:1,pg:0,pf:6,desc:'Produces food to train troops.'},
-  barracks:{e:'⚔️',n:'Barracks',   gc:300,fc:50, bt:60,  cr:1,pg:0,pf:0,desc:'Train soldiers for battle.'},
-  tower:   {e:'🗼',n:'Watch Tower', gc:250,fc:30, bt:45,  cr:2,pg:0,pf:0,desc:'Defends against raiders. Castle Lv2.'},
-  market:  {e:'🏪',n:'Market',      gc:400,fc:100,bt:90,  cr:3,pg:4,pf:0,desc:'Bonus gold production. Castle Lv3.'},
-  stable:  {e:'🐎',n:'Stables',     gc:350,fc:120,bt:75,  cr:3,pg:0,pf:0,desc:'Train cavalry units. Castle Lv3.'},
-  forge:   {e:'🔨',n:'Forge',        gc:600,fc:100,bt:120, cr:4,pg:0,pf:0,desc:'Boosts hero upgrades. Castle Lv4.'},
-  wizard:  {e:'🧪',n:'Wizard Tower', gc:800,fc:150,bt:180, cr:4,pg:0,pf:0,desc:'AoE magic defense. Castle Lv4.'},
+  barracks:{e:'⚔️',n:'Barracks',   gc:300,fc:50, bt:60,  cr:1,pg:0,pf:0,desc:'Train your smelly but loyal trash warriors for battle.'},
+  tower:   {e:'🗼',n:'Watch Tower', gc:250,fc:30, bt:45,  cr:2,pg:0,pf:0,desc:'Keeps raiders away from your precious garbage. Unlocked at Castle Lv2.'},
+  market:  {e:'🏪',n:'Market',      gc:400,fc:100,bt:90,  cr:3,pg:4,pf:0,desc:'Sell junk for bonus gold. Unlocked at Castle Lv3.'},
+  stable:  {e:'🐎',n:'Stables',     gc:350,fc:120,bt:75,  cr:3,pg:0,pf:0,desc:'Train cavalry units. Unlocked at Castle Lv3.'},
+  forge:   {e:'🔨',n:'Forge',        gc:600,fc:100,bt:120, cr:4,pg:0,pf:0,desc:'Hammer junk into power — boosts hero upgrades. Unlocked at Castle Lv4.'},
+  wizard:  {e:'🧪',n:'Wizard Tower', gc:800,fc:150,bt:180, cr:4,pg:0,pf:0,desc:'Magical dumpster fire defense. Unlocked at Castle Lv4.'},
 };
 
 // ═══════════════ TROOP DEFS ═══════════════
@@ -1235,8 +1235,8 @@ const TD={
 
 // ═══════════════ ACHIEVEMENTS ═══════════════
 const ACH = [
-  { id: 'c2', n: 'Stone Fort', d: 'Upgrade Castle to Lv 2', gems: 100, check: () => G.castleLevel >= 2 },
-  { id: 'c3', n: 'Iron Fortress', d: 'Upgrade Castle to Lv 3', gems: 150, check: () => G.castleLevel >= 3 },
+  { id: 'c2', n: 'Rubbish Pile', d: 'Upgrade Castle to Lv 2', gems: 100, check: () => G.castleLevel >= 2 },
+  { id: 'c3', n: 'Junk Yard', d: 'Upgrade Castle to Lv 3', gems: 150, check: () => G.castleLevel >= 3 },
   { id: 'b5', n: 'City Planner', d: 'Build 5 structures', gems: 50, check: () => G.buildings.filter(b => b.type && b.type !== 'castle').length >= 4 },
   { id: 't10', n: 'Army Builder', d: 'Train 10 troops total', gems: 50, check: () => Object.values(G.troops).reduce((a, t) => a + t.count, 0) >= 10 },
   { id: 'win1', n: 'First Blood', d: 'Win your first battle', gems: 75, check: () => G.trophies > 140 }
@@ -1298,7 +1298,7 @@ function tick(){
     G.castleUpgrading=null; G.castleLevel++;
     const cb=G.buildings.find(b=>b.type==='castle');
     if(cb){cb.level=G.castleLevel;cb.constructionEnd=null;}
-    showToast(`Castle upgraded to Level ${G.castleLevel}! 🏰✨`);spawnP('🏰',5);
+    showToast(`Your trash empire grows! Castle → Level ${G.castleLevel}! 🗑️✨`);spawnP('🏰',5);
   }
   // troop training
   Object.entries(G.troops).forEach(([id,t])=>{
@@ -1431,7 +1431,7 @@ function openCastle(){
       <div class="sr"><span class="sl">Lv${lvl+1} Unlocks</span><span class="sv" style="color:var(--gem);font-size:11px">${nextInfo}</span></div>
       `:`<div class="sr"><span class="sl">Status</span><span class="sv" style="color:var(--gold)">MAX LEVEL ⭐</span></div>`}
     </div>
-    <div style="font-size:10px;color:var(--text-dim);text-align:center;margin-bottom:7px">Castle upgrades lock it during construction. Plan ahead!</div>
+    <div style="font-size:10px;color:var(--text-dim);text-align:center;margin-bottom:7px">Upgrading the Castle locks it down during construction. Plan your trash empire wisely!</div>
     <div class="br">
       <button class="gb drk" onclick="closeModal()">Close</button>
       ${upgBtn}
@@ -1445,7 +1445,7 @@ function upgCastle(){
   G.castleUpgrading=Date.now()+dur;
   const cb=G.buildings.find(b=>b.type==='castle');
   if(cb){cb.constructionEnd=G.castleUpgrading;cb.constructionDuration=dur;}
-  closeModal();showToast(`Castle upgrading to Lv${G.castleLevel+1}! ⚒️`);updateUI();renderBuildings();saveGame();
+  closeModal();showToast(`Expanding the trash empire to Lv${G.castleLevel+1}! ⚒️`);updateUI();renderBuildings();saveGame();
 }
 function openCastleSpeedup(){
   if(!G.castleUpgrading)return;
@@ -1488,7 +1488,7 @@ function openBuildMenu(idx){
     return`<div class="bop ${cls}" onclick="${clickAction}"><div class="boi">${d.e}</div><div class="bon">${d.n}</div><div class="boc">🪙${d.gc}${d.fc?` 🌾${d.fc}`:''}</div><div class="bot">⏱${fmtT(d.bt*1000)}</div>${!ok?`<div class="boreq">Castle Lv${d.cr}</div>`:''}</div>`;
   }).join('');
   
-  showModal(`<div class="mt">🏗️ Build</div><div class="msub">Castle Lv${G.castleLevel} — gray = locked</div><div class="msc"><div class="bgrid">${rows}</div></div><div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal()">Cancel</button></div>`);
+  showModal(`<div class="mt">🏗️ Build</div><div class="msub">Castle Lv${G.castleLevel} · ${cc(G.castleLevel).label} — grayed = locked</div><div class="msc"><div class="bgrid">${rows}</div></div><div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal()">Cancel</button></div>`);
 }
         
 function startBuild(idx,type){
@@ -1519,7 +1519,7 @@ function openBInfo(idx){
     <div style="margin:8px 0">
       <div class="sr"><span class="sl">Level</span><span class="sv">${b.level} / ${ml}</span></div>
       <div class="sr"><span class="sl">Output</span><span class="sv">${prod}</span></div>
-      ${!atMax?`<div class="sr"><span class="sl">Upgrade Cost</span><span class="sv">🪙 ${uc.toLocaleString()}</span></div><div class="sr"><span class="sl">Upgrade Time</span><span class="sv">⏱ ${fmtT(ut*1000)}</span></div>`:`<div class="sr"><span class="sl">Status</span><span class="sv" style="color:var(--gold)">MAX for Castle Lv${G.castleLevel}</span></div>`}
+      ${!atMax?`<div class="sr"><span class="sl">Upgrade Cost</span><span class="sv">🪙 ${uc.toLocaleString()}</span></div><div class="sr"><span class="sl">Upgrade Time</span><span class="sv">⏱ ${fmtT(ut*1000)}</span></div>`:`<div class="sr"><span class="sl">Status</span><span class="sv" style="color:var(--gold)">MAXED at Castle Lv${G.castleLevel} 🗑️</span></div>`}
     </div>
     <div class="br">
       <button class="gb drk" onclick="closeModal()">Close</button>
@@ -1562,12 +1562,12 @@ function finNow(idx,cost){
 function openTroops() {
   const brx = G.buildings.find(b => b.type === 'barracks' && !b.constructionEnd);
   let h = `<div class="mt">⚔️ Troop Training</div>`;
-  if (!brx) { h += `<div class="msub" style="color:var(--orange)">Build a Barracks first!</div>`; }
+  if (!brx) { h += `<div class="msub" style="color:var(--orange)">Build a Barracks first — even trash lords need soldiers!</div>`; }
   else {
     const brxLvl = brx.level;
     const speedMult = Math.pow(0.85, brxLvl - 1); // 15% faster per Barracks level
     
-    h += `<div class="msub">Barracks Lv${brxLvl} — Training Speed: ${Math.round((1 - speedMult)*100)}% Boost</div><div class="msc"><div class="tgrid">`;
+    h += `<div class="msub">Barracks Lv${brxLvl} — Recruit your army of trash warriors (+${Math.round((1 - speedMult)*100)}% speed boost)</div><div class="msc"><div class="tgrid">`;
     Object.entries(TD).forEach(([id, d]) => {
       const realTt = d.tt * speedMult; // Apply speed boost to UI
       const t=G.troops[id], unlk=G.castleLevel>=d.cr;
@@ -1589,12 +1589,12 @@ function openTroops() {
     h+=`</div>`;
     // army summary
     const total=Object.values(G.troops).reduce((a,t)=>a+t.count,0);
-    h+=`<div style="margin-top:12px;font-family:'Cinzel',serif;font-size:12px;color:var(--text-dim);margin-bottom:6px">Your Army (${total} troops)</div>`;
+    h+=`<div style="margin-top:12px;font-family:'Cinzel',serif;font-size:12px;color:var(--text-dim);margin-bottom:6px">🗑️ Your Trash Army (${total} warriors)</div>`;
     Object.entries(TD).forEach(([id,d])=>{
       const t=G.troops[id];
       if(t.count>0) h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;margin-bottom:5px"><span style="font-size:24px">${d.e}</span><div style="flex:1"><div style="font-family:'Cinzel',serif;font-size:11px">${d.n} ×${t.count}</div><div style="font-size:10px;color:var(--blue)">⚔ Dmg:${d.dmg} ❤ HP:${d.hp}</div></div></div>`;
     });
-    if(total===0) h+=`<div style="text-align:center;color:var(--text-dim);font-size:12px;padding:8px">No troops yet.</div>`;
+    if(total===0) h+=`<div style="text-align:center;color:var(--text-dim);font-size:12px;padding:8px">No warriors yet. Your trash kingdom is defenseless! 😬</div>`;
     h+=`</div>`;
   }
   h+=`<div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button><button class="gb gld" onclick="closeModal();setTab('b')">⚡ Battle!</button></div>`;
@@ -1621,7 +1621,7 @@ function openHeroes(){
       `<div class="hc" onclick="openHD(${i})"><span class="hcb">Lv${h.level}</span><span class="hci">${h.emoji}</span><div class="hcn">${h.name}</div><div class="hcl">⚔ ${h.power+h.level*20} pw</div><div style="font-size:8px;color:var(--text-dim)">${h.ability}</div><div class="xpb"><div class="xpf" style="width:${pct}%"></div></div><div style="font-size:8px;color:var(--text-dim);margin-top:2px">${h.xp}/${h.xpNeeded} XP</div></div>`:
       `<div class="hc lkd" onclick="openHU(${i})"><span class="hci">${h.emoji}</span><div class="hcn">${h.name}</div><div style="font-size:9px;color:var(--gem);margin-top:3px">🔒 ${300+i*200} 💎</div><div style="font-size:8px;color:var(--text-dim)">${h.ability}</div></div>`;
   }).join('');
-  showModal(`<div class="mt">🌟 Heroes</div><div class="msub">Your legendary champions</div><div class="msc"><div class="hgrid">${cards}</div></div><div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button></div>`);
+  showModal(`<div class="mt">🌟 Heroes</div><div class="msub">The legendary champions of trash</div><div class="msc"><div class="hgrid">${cards}</div></div><div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button></div>`);
 }
 function openHD(i){
   const h=G.heroes[i]; const uc=h.level*80; const pct=Math.round(h.xp/h.xpNeeded*100);
@@ -1655,7 +1655,7 @@ function openHU(i){
 function unlkH(i,cost){
   if(G.gems<cost){showToast('Not enough gems!');return;}
   G.gems-=cost;G.heroes[i].unlocked=true;G.heroes[i].level=1;
-  closeModal();showToast(`${G.heroes[i].name} joins! 🎉`);spawnP('⚔️',4);updateUI();saveGame();
+  closeModal();showToast(`${G.heroes[i].name} joins your trash army! 🎉`);spawnP('⚔️',4);updateUI();saveGame();
 }
 
 // ═══════════════ CLAN ═══════════════
@@ -1692,18 +1692,18 @@ function donate(i){
 }
 function clanChat(){
   const msgs=[
-    {n:'Thornwood',e:'⚔️',m:'Anyone got spare archers?'},
-    {n:'Lady Sera', e:'👸',m:'Just won 3 raids in a row 🔥'},
-    {n:'GrimAxe',   e:'🪓',m:'Castle Lv3 unlocked the Market!'},
-    {n:'SilverFox', e:'🦊',m:'War starts in 2 hours, gear up!'},
-    {n:'You',       e:'🫵',m:'Ready for war! 💪',you:true},
+    {n:'Thornwood',e:'⚔️',m:'Anyone got spare archers? My scrap heap is empty.'},
+    {n:'Lady Sera', e:'👸',m:'Just won 3 raids and looted their clean villages 🔥'},
+    {n:'GrimAxe',   e:'🪓',m:'Castle Lv3! The Market sells SO much junk now lol'},
+    {n:'SilverFox', e:'🦊',m:'War starts in 2 hours — we fight The Clean Freaks!'},
+    {n:'You',       e:'🫵',m:'Trash reigns supreme! 🗑️💪',you:true},
   ];
   const chat=msgs.map(m=>`<div style="display:flex;flex-direction:column;align-items:${m.you?'flex-end':'flex-start'};margin-bottom:7px"><div style="font-size:9px;color:var(--text-dim);margin-bottom:2px">${m.e} ${m.n}</div><div style="background:${m.you?'var(--purple)':'var(--bg-card)'};border:1px solid var(--border);border-radius:9px;padding:6px 10px;max-width:82%;font-size:12px">${m.m}</div></div>`).join('');
   showModal(`<div class="mt">💬 Clan Chat</div><div class="msub">${G.clan.name}</div><div class="msc" style="max-height:42vh">${chat}</div><div style="display:flex;gap:7px;margin-top:10px"><input id="ci" placeholder="Type…" style="flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Crimson Pro',serif;font-size:12px;outline:none"><button class="gb pur" style="flex:none;padding:8px 12px" onclick="sendMsg()">Send</button></div>`);
 }
 function sendMsg(){showToast('Message sent! 💬');closeModal();openClan();}
 function clanWar(){
-  showModal(`<div class="mt">⚔️ Clan War</div><div class="msub">Iron Wolves vs. Dark Ember Clan</div><div style="text-align:center;padding:16px"><div style="font-size:48px">⚔️</div><div style="font-family:'Cinzel',serif;font-size:14px;color:var(--orange);margin-top:8px">War in Progress!</div><div style="font-size:12px;color:var(--text-dim);margin-top:6px">Attacks remaining: 2 · Score: 12 ⭐ vs 9 ⭐</div></div><div class="br"><button class="gb drk" onclick="closeModal()">Close</button><button class="gb gld" onclick="closeModal();openBSearch()">⚡ Attack!</button></div>`,true);
+  showModal(`<div class="mt">⚔️ Clan War</div><div class="msub">Trash Pandas vs. The Clean Freaks</div><div style="text-align:center;padding:16px"><div style="font-size:48px">⚔️</div><div style="font-family:'Cinzel',serif;font-size:14px;color:var(--orange);margin-top:8px">War in Progress! Show them trash is power!</div><div style="font-size:12px;color:var(--text-dim);margin-top:6px">Attacks remaining: 2 · Score: 12 ⭐ vs 9 ⭐</div></div><div class="br"><button class="gb drk" onclick="closeModal()">Close</button><button class="gb gld" onclick="closeModal();openBSearch()">⚡ Attack!</button></div>`,true);
 }
 
 // ═══════════════ BATTLE ═══════════════
@@ -1721,9 +1721,9 @@ function openBSearch(){
     return;
   }
   const enemies=[
-    {n:'Stonewall Keep',   loot:180,diff:'Easy',  dc:'var(--green)'},
-    {n:'Ironveil Bastion', loot:320,diff:'Medium',dc:'var(--gold)'},
-    {n:'Dreadforge Keep',  loot:580,diff:'Hard',  dc:'var(--red)'},
+    {n:'Tidyville',     loot:180,diff:'Easy',  dc:'var(--green)'},
+    {n:'Cleanington',   loot:320,diff:'Medium',dc:'var(--gold)'},
+    {n:'The Sanitarium',loot:580,diff:'Hard',  dc:'var(--red)'},
   ];
   const heroes=G.heroes.filter(h=>h.unlocked);
   const power=heroes.reduce((a,h)=>a+h.power+h.level*20,0)+total*15;
@@ -1733,12 +1733,12 @@ function openBSearch(){
       <div><div class="sin">${e.n}</div><div class="sid">Difficulty: <span style="color:${e.dc}">${e.diff}</span></div></div>
       <span style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--gold)">🪙${e.loot}</span>
     </div>`).join('');
-  showModal(`<div class="mt">⚡ Find Battle</div><div class="msub">Your power: ⚔️ ${power} · ${total} troops</div>${opts}<div class="br"><button class="gb drk" onclick="closeModal()">Cancel</button></div>`);
+  showModal(`<div class="mt">⚡ Find Battle</div><div class="msub">Raid a clean village — show them what trash can do! ⚔️ ${power} power · ${total} troops</div>${opts}<div class="br"><button class="gb drk" onclick="closeModal()">Cancel</button></div>`);
 }
 
 function startBattle(ei){
   closeModal();
-  const enemies=[{n:'Stonewall Keep',loot:180},{n:'Ironveil Bastion',loot:320},{n:'Dreadforge Keep',loot:580}];
+  const enemies=[{n:'Tidyville',loot:180},{n:'Cleanington',loot:320},{n:'The Sanitarium',loot:580}];
   const layout=ELAYOUTS[ei].map(b=>({...b}));
   BS={
     enemy:enemies[ei],
@@ -1920,7 +1920,7 @@ function spawnP(em,n){
 loadGame();
 updateUI();renderBuildings();
 setTimeout(tick,1000);
-showToast('Welcome to Kingdom of Trash! Tap 🏰 to see your Castle.');
+showToast('Welcome to Kingdom of Trash! 🗑️ Tap 🏰 to inspect your Castle.');
     </script>
 </body>
 </html>
