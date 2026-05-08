@@ -1280,7 +1280,6 @@ function updateUI(){
   document.getElementById('gval').textContent=fmt(G.gold);
   document.getElementById('fval').textContent=fmt(G.food);
   document.getElementById('mval').textContent=fmt(G.gems);
-  document.getElementById('cbadge').textContent=`🏰 Lv${G.castleLevel} · ${cc(G.castleLevel).label}`;
 }
 function fmt(n) {
   if (n < 1000) return Math.floor(n).toString();
