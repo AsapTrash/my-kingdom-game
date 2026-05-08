@@ -1503,13 +1503,17 @@ function finNow(idx,cost){
 }
 
 // ═══════════════ TROOPS ═══════════════
-function openTroops(){
-  const hasBrx=G.buildings.some(b=>b.type==='barracks'&&!b.constructionEnd);
-  let h=`<div class="mt">⚔️ Troop Training</div>`;
-  if(!hasBrx){h+=`<div class="msub" style="color:var(--orange)">Build a Barracks first!</div>`;}
-  else{
-    h+=`<div class="msub">Train soldiers for battle</div><div class="msc"><div class="tgrid">`;
-    Object.entries(TD).forEach(([id,d])=>{
+function openTroops() {
+  const brx = G.buildings.find(b => b.type === 'barracks' && !b.constructionEnd);
+  let h = `<div class="mt">⚔️ Troop Training</div>`;
+  if (!brx) { h += `<div class="msub" style="color:var(--orange)">Build a Barracks first!</div>`; }
+  else {
+    const brxLvl = brx.level;
+    const speedMult = Math.pow(0.85, brxLvl - 1); // 15% faster per Barracks level
+    
+    h += `<div class="msub">Barracks Lv${brxLvl} — Training Speed: ${Math.round((1 - speedMult)*100)}% Boost</div><div class="msc"><div class="tgrid">`;
+    Object.entries(TD).forEach(([id, d]) => {
+      const realTt = d.tt * speedMult; // Apply speed boost to UI
       const t=G.troops[id], unlk=G.castleLevel>=d.cr;
       const afford=G.gold>=d.gc&&G.food>=d.fc;
       const now=Date.now();
