@@ -1451,15 +1451,24 @@ function cfin(cost){
 }
 
 // ═══════════════ BUILD MENU ═══════════════
+// ═══════════════ BUILD MENU ═══════════════
 function openBuildMenu(idx){
   const rows=Object.entries(BD).filter(([k])=>k!=='castle').map(([key,d])=>{
-    const ok=isAllowed(key), afford=G.gold>=d.gc&&G.food>=d.fc;
+    const ok=isAllowed(key), afford=Number(G.gold)>=d.gc && Number(G.food)>=d.fc;
     const cls=!ok?'nc':!afford?'ca':'';
-    const click=ok&&afford?`startBuild(${idx},'${key}')`:ok?`showToast('Need more resources!')`: `showToast('Upgrade Castle to Lv${d.cr}!')`;
-    return`<div class="bop ${cls}" onclick="${click}"><div class="boi">${d.e}</div><div class="bon">${d.n}</div><div class="boc">🪙${d.gc}${d.fc?` 🌾${d.fc}`:''}</div><div class="bot">⏱${fmtT(d.bt*1000)}</div>${!ok?`<div class="boreq">Castle Lv${d.cr}</div>`:''}</div>`;
+    
+    // Clean HTML click logic
+    let clickAction = '';
+    if (ok && afford) { clickAction = `startBuild(${idx}, '${key}')`; }
+    else if (ok) { clickAction = `showToast('Need more resources!')`; }
+    else { clickAction = `showToast('Upgrade Castle to Lv${d.cr}!')`; }
+    
+    return`<div class="bop ${cls}" onclick="${clickAction}"><div class="boi">${d.e}</div><div class="bon">${d.n}</div><div class="boc">🪙${d.gc}${d.fc?` 🌾${d.fc}`:''}</div><div class="bot">⏱${fmtT(d.bt*1000)}</div>${!ok?`<div class="boreq">Castle Lv${d.cr}</div>`:''}</div>`;
   }).join('');
+  
   showModal(`<div class="mt">🏗️ Build</div><div class="msub">Castle Lv${G.castleLevel} — gray = locked</div><div class="msc"><div class="bgrid">${rows}</div></div><div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal()">Cancel</button></div>`);
 }
+        
 function startBuild(idx,type){
   const d=BD[type]; G.gold-=d.gc; G.food-=d.fc;
   const dur=d.bt*1000;
