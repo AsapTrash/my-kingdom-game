@@ -1145,12 +1145,9 @@ const G={
   lastTick:Date.now(),
   castleLevel:1,
   castleUpgrading:null,
-  buildings:[
-    {slot:0,type:'castle',  level:1,constructionEnd:null,constructionDuration:null},
-    {slot:1,type:'goldmine',level:1,constructionEnd:null,constructionDuration:null},
-    {slot:2,type:'farm',    level:1,constructionEnd:null,constructionDuration:null},
-    {slot:3,type:'barracks',level:1,constructionEnd:null,constructionDuration:null},
-    ...Array.from({length:12},(_,i)=>({slot:i+4,type:null,constructionEnd:null,constructionDuration:null}))
+  buildings: [
+    { slot: 0, type: 'castle', level: 1, constructionEnd: null, constructionDuration: null },
+    ...Array.from({ length: 15 }, (_, i) => ({ slot: i + 1, type: null, constructionEnd: null, constructionDuration: null }))
   ],
   troops:{swordsman:{count:5,training:[]},archer:{count:3,training:[]},knight:{count:0,training:[]},mage:{count:0,training:[]},giant:{count:0,training:[]}},
   heroes:[
