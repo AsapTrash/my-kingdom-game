@@ -1291,16 +1291,18 @@ function tick(){
 }
 
 // ═══════════════ UI ═══════════════
-function updateUI(){
-  document.getElementById('gval').textContent=fmt(G.gold);
-  document.getElementById('fval').textContent=fmt(G.food);
-  document.getElementById('mval').textContent=fmt(G.gems);
+function updateUI() {
+  document.getElementById('gval').textContent = fmt(G.gold);
+  document.getElementById('fval').textContent = fmt(G.food);
+  document.getElementById('mval').textContent = fmt(G.gems);
+  // cbadge has been completely removed from here!
 }
+
 function fmt(n) {
   if (n < 1000) return Math.floor(n).toString();
   if (n < 1000000) return (n / 1000).toFixed(1).replace('.0', '') + 'k';
   if (n < 1000000000) return (n / 1000000).toFixed(2).replace('.00', '') + 'M';
-  return (n / 1000000000).toFixed(2).replace('.00', '') + 'B'; // For the billionaires!
+  return (n / 1000000000).toFixed(2).replace('.00', '') + 'B'; 
 }
 function bump(id){const e=document.getElementById(id);e.classList.add('bump');setTimeout(()=>e.classList.remove('bump'),280);}
 
