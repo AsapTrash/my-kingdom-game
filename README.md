@@ -1,2 +1,2 @@
-# my-kingdom-game
+# Kingdom of Trash
 game im making
