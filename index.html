@@ -102,32 +102,11 @@
             white-space: nowrap
         }
 
-        /* WORLD */
-        #world {
-            position: fixed;
-            top: 54px;
-            bottom: 114px;
-            left: 0;
-            right: 0;
-            overflow: hidden;
-            background: radial-gradient(ellipse at 50% 80%,#1a3020 0%,transparent 60%),radial-gradient(ellipse at 20% 20%,#1a2530 0%,transparent 50%),linear-gradient(180deg,#0d1520,#0d1a10)
-        }
-
-            #world::before {
-                content: '';
-                position: absolute;
-                inset: 0;
-                background-image: repeating-linear-gradient(0deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px),repeating-linear-gradient(90deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px);
-                pointer-events: none
-            }
-
-        #world-inner {
-            position: absolute;
-            inset: 0;
-            display: grid;
-            gap: 5px;
-            padding: 8px
-        }
+        
+/* WORLD */
+#world{position:fixed;top:54px;bottom:114px;left:0;right:0;overflow-y:auto;background:radial-gradient(ellipse at 50% 80%,#1a3020 0%,transparent 60%),radial-gradient(ellipse at 20% 20%,#1a2530 0%,transparent 50%),linear-gradient(180deg,#0d1520,#0d1a10)}
+#world::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px),repeating-linear-gradient(90deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px);pointer-events:none;min-height:100%}
+#world-inner{position:relative;min-height:100%;display:grid;gap:5px;padding:8px;padding-bottom:24px}
 
         .deco-tree {
             position: absolute;
@@ -1526,7 +1505,7 @@ function openTroops() {
         <div class="tcs">❤️${d.hp} ⚔️${d.dmg}</div>
         <div class="tcc">🪙${d.gc} 🌾${d.fc}</div>
         ${!unlk?`<div style="font-size:9px;color:var(--red);margin-top:3px">Castle Lv${d.cr}</div>`:
-          `<button class="ttr" onclick="trainTroop('${id}')" ${afford?'':''} style="${afford?'':'opacity:.5;cursor:not-allowed'}">${afford?`+Train (${fmtT(d.tt*1000)})`:'Need Resources'}</button>`}
+          `<button class="ttr" onclick="trainTroop('${id}')" ${afford?'':''} style="${afford?'':'opacity:.5;cursor:not-allowed'}">${afford?`+Train (${fmtT(realTt * 1000)})`:'Need Resources'}</button>`}
         ${t.training.length>0?`<div class="tpb"><div class="tpf" style="width:${pct}%"></div></div><div style="font-size:8px;color:var(--blue);margin-top:2px">${t.training.length} training · ${next}</div>`:''}
       </div>`;
     });
@@ -1544,12 +1523,17 @@ function openTroops() {
   h+=`<div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button><button class="gb gld" onclick="closeModal();setTab('b')">⚡ Battle!</button></div>`;
   showModal(h);
 }
-function trainTroop(id){
-  const d=TD[id];
-  if(G.gold<d.gc||G.food<d.fc){showToast('Not enough resources!');return;}
-  G.gold-=d.gc;G.food-=d.fc;
-  G.troops[id].training.push({finishAt:Date.now()+d.tt*1000});
-  showToast(`Training ${d.e} ${d.n}…`);updateUI();closeModal();openTroops();
+function trainTroop(id) {
+  const d = TD[id];
+  if (G.gold < d.gc || G.food < d.fc) { showToast('Not enough resources!'); return; }
+  
+  const brx = G.buildings.find(b => b.type === 'barracks');
+  const speedMult = brx ? Math.pow(0.85, brx.level - 1) : 1;
+  const realTt = d.tt * speedMult;
+
+  G.gold -= d.gc; G.food -= d.fc;
+  G.troops[id].training.push({ finishAt: Date.now() + realTt * 1000 });
+  showToast(`Training ${d.e} ${d.n}…`); updateUI(); closeModal(); openTroops();
 }
 
 // ═══════════════ HEROES ═══════════════
