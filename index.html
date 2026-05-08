@@ -1295,7 +1295,7 @@ function renderBuildings(){
   const unlocked=cc(G.castleLevel).slots;
   const cols=G.castleLevel>=3?4:3;
   wi.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-  wi.style.gridTemplateRows=`repeat(${Math.ceil(16/cols)},1fr)`;
+  wi.style.gridTemplateRows=`repeat(${Math.ceil(60/cols)},1fr)`;
   wi.innerHTML='';
   G.buildings.forEach((b,i)=>{
     const s=document.createElement('div'); s.className='bs';
