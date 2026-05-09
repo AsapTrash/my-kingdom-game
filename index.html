@@ -108,25 +108,11 @@
 #world::before{content:'';position:fixed;top:54px;bottom:114px;left:0;right:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px),repeating-linear-gradient(90deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px);pointer-events:none;z-index:0}
 /* Fix: world-inner is relative for scroll layout; trees use a separate fixed overlay rendered in JS */
 #world-inner{position:relative;min-height:100%;display:grid;gap:5px;padding:8px;padding-bottom:24px;z-index:1}
-.deco-tree-overlay{position:fixed;top:54px;bottom:114px;left:0;right:0;pointer-events:none;z-index:2}
 
-        .deco-tree {
-            position: absolute;
-            font-size: 22px;
-            pointer-events: none;
-            animation: sway 4s ease-in-out infinite;
-            z-index: 2
-        }
 
-        @keyframes sway {
-            0%,100% {
-                transform: rotate(-2deg)
-            }
 
-            50% {
-                transform: rotate(2deg)
-            }
-        }
+
+
 
         /* BUILDING SLOTS */
         .bs {
@@ -1371,19 +1357,6 @@ function renderBuildings(){
       }
     }
     wi.appendChild(s);
-  });
-  // Fix #5: render trees in a fixed overlay so they aren't affected by scrolling world-inner
-  let treeOverlay = document.getElementById('tree-overlay');
-  if (!treeOverlay) {
-    treeOverlay = document.createElement('div');
-    treeOverlay.id = 'tree-overlay';
-    treeOverlay.className = 'deco-tree-overlay';
-    document.body.appendChild(treeOverlay);
-  }
-  treeOverlay.innerHTML = '';
-  [{x:3,y:28},{x:89,y:18},{x:76,y:70},{x:5,y:66}].forEach(t=>{
-    const el=document.createElement('div');el.className='deco-tree';
-    el.style.cssText=`left:${t.x}%;top:${t.y}%`;el.textContent='🌲';treeOverlay.appendChild(el);
   });
 }
 
