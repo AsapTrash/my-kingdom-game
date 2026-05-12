@@ -87,6 +87,25 @@
                 color: var(--gold)
             }
 
+        /* Storage cap states */
+        .res-chip.res-full {
+            border-color: var(--red);
+            background: #2a1015;
+        }
+        .res-chip.res-overflow {
+            border-color: var(--gold);
+            animation: overflowPulse 1.2s ease-in-out infinite;
+        }
+        @keyframes overflowPulse {
+            0%,100% { box-shadow: 0 0 0px #f5c84200; }
+            50%      { box-shadow: 0 0 10px #f5c84299; }
+        }
+        @keyframes lostFloat {
+            0%   { opacity: 1; transform: translateY(0) scale(1); }
+            60%  { opacity: 0.8; transform: translateY(-28px) scale(0.9); }
+            100% { opacity: 0; transform: translateY(-48px) scale(0.6); }
+        }
+
         .gem-chip .val {
             color: var(--gem) !important
         }
@@ -1056,14 +1075,267 @@
             font-size: 14px;
             animation: fup .9s ease-out forwards
         }
+
+        /* ═══ ALTAR / SUMMONING ═══ */
+        #altar-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 250;
+            display: none;
+            flex-direction: column;
+            background: radial-gradient(ellipse at 50% 0%, #1a0830 0%, #080510 60%);
+            overflow: hidden;
+        }
+        #altar-screen.act { display: flex; }
+
+        .altar-fire {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 180px;
+            background: radial-gradient(ellipse at 50% 0%, #5a1a8033 0%, transparent 70%);
+            pointer-events: none;
+            animation: altarGlow 2s ease-in-out infinite;
+        }
+        @keyframes altarGlow {
+            0%,100% { opacity: .7; }
+            50% { opacity: 1; filter: brightness(1.3); }
+        }
+
+        .altar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: #0a0614;
+            border-bottom: 1px solid #6c2fa0;
+            position: relative; z-index: 2;
+        }
+
+        .altar-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 12px 20px;
+            position: relative; z-index: 2;
+        }
+
+        .altar-pull-zone {
+            background: radial-gradient(ellipse at 50% 50%, #2a0a4022 0%, #0d0820 80%);
+            border: 1px solid #6c2fa055;
+            border-radius: 16px;
+            padding: 20px 14px 16px;
+            text-align: center;
+            margin-bottom: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        .altar-pull-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-conic-gradient(#6c2fa008 0deg, transparent 1deg, transparent 20deg);
+            animation: altarSpin 20s linear infinite;
+        }
+        @keyframes altarSpin { to { transform: rotate(360deg); } }
+
+        .altar-cauldron {
+            font-size: 72px;
+            display: block;
+            filter: drop-shadow(0 0 20px #9b59b6aa);
+            animation: cauldronFloat 3s ease-in-out infinite;
+            position: relative; z-index: 1;
+        }
+        @keyframes cauldronFloat {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .altar-pull-title {
+            font-family: 'Cinzel', serif;
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--purple);
+            text-shadow: 0 0 20px #9b59b677;
+            margin: 8px 0 2px;
+            position: relative; z-index: 1;
+        }
+        .altar-pull-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+            position: relative; z-index: 1;
+        }
+
+        .pull-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            position: relative; z-index: 1;
+        }
+        .pull-btn {
+            background: linear-gradient(135deg, #2a0a40, #4a1580);
+            border: 1px solid var(--purple);
+            border-radius: 10px;
+            padding: 10px 8px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            transition: all .15s;
+        }
+        .pull-btn:hover { border-color: #c882ff; box-shadow: 0 0 12px #9b59b655; }
+        .pull-btn:active { transform: scale(.94); }
+        .pull-btn .pbc { font-size: 13px; color: var(--gem); display: block; margin-top: 2px; }
+
+        /* Shard reveal animation */
+        @keyframes shardReveal {
+            0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+            60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        .shard-result {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 14px;
+            border: 1px solid var(--border);
+            animation: shardReveal .5s cubic-bezier(.34,1.56,.64,1);
+        }
+        .shard-result.common  { border-color: #6a8898; background: #111e28; }
+        .shard-result.rare    { border-color: #2a80e8; background: #0d1828; box-shadow: 0 0 16px #2a80e833; }
+        .shard-result.legend  { border-color: #e8a020; background: #201408; box-shadow: 0 0 24px #e8a02055; }
+        .shard-result-emoji   { font-size: 48px; display: block; margin-bottom: 6px; }
+        .shard-result-name    { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; }
+        .shard-result-count   { font-size: 20px; font-weight: 900; font-family: 'Cinzel', serif; margin: 4px 0; }
+        .shard-result.common  .shard-result-count { color: #8ab0c0; }
+        .shard-result.rare    .shard-result-count { color: #5aacff; }
+        .shard-result.legend  .shard-result-count { color: var(--gold); }
+
+        /* Hero roster grid - Altar view */
+        .altar-roster {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .altar-hero-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .15s;
+            position: relative;
+        }
+        .altar-hero-card:hover { border-color: var(--purple); }
+        .altar-hero-card.common  { border-color: #2a3a45; }
+        .altar-hero-card.rare    { border-color: #1a3a6a; }
+        .altar-hero-card.legend  { border-color: #4a3000; }
+        .altar-hero-card.unlocked.common  { border-color: #6a8898; background: #111e28; }
+        .altar-hero-card.unlocked.rare    { border-color: #2a80e8; background: #0d1828; }
+        .altar-hero-card.unlocked.legend  { border-color: #e8a020; background: #1a0e00; }
+        .altar-rarity-badge {
+            position: absolute; top: 5px; left: 5px;
+            font-family: 'Cinzel', serif; font-size: 7px; font-weight: 700;
+            padding: 2px 5px; border-radius: 5px; letter-spacing: .3px;
+        }
+        .badge-common  { background: #2a3a45; color: #8ab0c0; }
+        .badge-rare    { background: #1a3060; color: #5aacff; }
+        .badge-legend  { background: #3a2000; color: var(--gold); }
+
+        .shard-bar { height: 4px; background: #ffffff13; border-radius: 2px; margin-top: 5px; }
+        .shard-bar-fill { height: 100%; border-radius: 2px; transition: width .5s; }
+        .fill-common  { background: #6a8898; }
+        .fill-rare    { background: #2a80e8; }
+        .fill-legend  { background: var(--gold); }
+
+        .assemble-btn {
+            margin-top: 6px;
+            width: 100%;
+            padding: 5px;
+            border-radius: 6px;
+            border: none;
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .15s;
+        }
+        .assemble-btn:active { transform: scale(.95); }
+
+        /* ═══ GARRISON BADGE on buildings ═══ */
+        .garrison-badge {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            font-size: 11px;
+            line-height: 1;
+            filter: drop-shadow(0 0 4px #9b59b6aa);
+            animation: garrisonPulse 3s ease-in-out infinite;
+        }
+        @keyframes garrisonPulse {
+            0%,100% { filter: drop-shadow(0 0 2px #9b59b655); }
+            50% { filter: drop-shadow(0 0 7px #9b59b6cc); }
+        }
+
+        /* Garrison modal hero picker */
+        .garrison-pick {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 6px;
+            transition: border-color .15s;
+        }
+        .garrison-pick:hover { border-color: var(--purple); }
+        .garrison-pick.active-garrison { border-color: var(--purple); background: #1a0d30; }
+        .garrison-pick-emoji { font-size: 26px; }
+        .garrison-pick-name { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; }
+        .garrison-pick-buff { font-size: 10px; color: var(--gem); margin-top: 1px; }
+        .garrison-pick-status { margin-left: auto; font-size: 9px; color: var(--text-dim); font-family: 'Cinzel', serif; text-align: right; }
+
+        /* Altar overlay for pull animation */
+        #altar-overlay {
+            position: fixed; inset: 0; z-index: 400;
+            background: #00000000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        #altar-overlay.act {
+            display: flex;
+            background: #000000cc;
+            backdrop-filter: blur(6px);
+        }
+        .pull-anim-wrap {
+            text-align: center;
+            animation: pi2 .3s cubic-bezier(.34,1.56,.64,1);
+        }
+        .pull-fire {
+            font-size: 80px;
+            display: block;
+            animation: pullFireSpin 1s ease-out forwards;
+        }
+        @keyframes pullFireSpin {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; filter: hue-rotate(0deg); }
+            60% { transform: scale(1.4) rotate(20deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0); filter: hue-rotate(90deg); }
+        }
     </style>
 </head>
 <body>
     <div id="topbar">
   <div class="res-group">
-    <div class="res-chip" id="gchip"><span>🪙</span><span class="val" id="gval">0</span></div>
-    <div class="res-chip" id="fchip"><span>🌾</span><span class="val" id="fval">0</span></div>
+    <div class="res-chip" id="gchip" style="min-width:0"><span>🪙</span><span class="val" id="gval" style="font-size:10px">0</span></div>
+    <div class="res-chip" id="fchip" style="min-width:0"><span>🌾</span><span class="val" id="fval" style="font-size:10px">0</span></div>
   </div>
+  <span class="castle-badge" id="cbadge" onclick="openCastle()">🏰 Lv1</span>
   <div style="display:flex; gap:6px">
     <div class="res-chip" style="cursor:pointer; padding-right:6px" onclick="openAch()"><span>🏆</span></div>
     <div class="res-chip gem-chip" id="mchip" onclick="openShop()"><span>💎</span><span class="val" id="mval">0</span></div>
@@ -1076,14 +1348,13 @@
         <button class="nb active" onclick="setTab('v')"><span class="ni">🏰</span>Village</button>
         <button class="nb" onclick="setTab('t')"><span class="ni">⚔️</span>Troops</button>
         <button class="nb" onclick="setTab('h')"><span class="ni">🌟</span>Heroes</button>
+        <button class="nb" onclick="setTab('a')"><span class="ni">🔮</span>Altar</button>
         <button class="nb" onclick="setTab('c')"><span class="ni">🛡️</span>Clan</button>
         <button class="nb" onclick="setTab('b')"><span class="ni">⚡</span>Battle</button>
-        <button class="nb" onclick="openShop()"><span class="ni">💎</span>Shop</button>
     </div>
 
     <div id="toast"></div>
 
-    <!-- BATTLE SCREEN -->
     <div id="bscr">
         <div class="btb">
             <button class="gb drk" style="flex:none;padding:5px 12px;font-size:10px" onclick="endBattle()">↩ Retreat</button>
@@ -1105,6 +1376,24 @@
         </div>
     </div>
 
+    <div id="altar-screen">
+        <div class="altar-fire"></div>
+        <div class="altar-header">
+            <button class="gb drk" style="flex:none;padding:5px 12px;font-size:10px" onclick="closeAltar()">↩ Back</button>
+            <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:900;color:var(--purple);text-shadow:0 0 12px #9b59b677">🔮 Summoning Altar</div>
+            <div class="res-chip gem-chip" style="padding:4px 8px"><span>💎</span><span class="val" id="altar-gems" style="font-size:10px">0</span></div>
+        </div>
+        <div class="altar-body" id="altar-body">
+            </div>
+    </div>
+
+    <div id="altar-overlay">
+        <div class="pull-anim-wrap">
+            <span class="pull-fire" id="pull-fire-emoji">🔥</span>
+            <div style="font-family:'Cinzel',serif;font-size:16px;font-weight:900;color:var(--purple);margin-top:12px;text-shadow:0 0 16px #9b59b6" id="pull-label">Summoning…</div>
+        </div>
+    </div>
+
     <script>
 // ═══════════════ STATE ═══════════════
 // ═══════════════ STATE ═══════════════
@@ -1114,16 +1403,28 @@ let G={
   castleLevel:1,
   castleUpgrading:null,
   buildings: [
-    { slot: 0, type: 'castle', level: 1, constructionEnd: null, constructionDuration: null },
-    ...Array.from({ length: 59 }, (_, i) => ({ slot: i + 1, type: null, constructionEnd: null, constructionDuration: null }))
+    { slot: 0, type: 'castle',  level: 1, constructionEnd: null, constructionDuration: null },
+    { slot: 1, type: 'vault',   level: 1, constructionEnd: null, constructionDuration: null },
+    { slot: 2, type: 'silo',    level: 1, constructionEnd: null, constructionDuration: null },
+    ...Array.from({ length: 57 }, (_, i) => ({ slot: i + 3, type: null, constructionEnd: null, constructionDuration: null }))
   ],
   troops:{swordsman:{count:5,training:[]},archer:{count:3,training:[]},knight:{count:0,training:[]},mage:{count:0,training:[]},giant:{count:0,training:[]}},
   heroes:[
-    {id:'knight',name:'Iron Knight',  emoji:'🛡️',level:1,xp:0, xpNeeded:100,power:120,unlocked:true, ability:'Shield Bash'},
-    {id:'archer',name:'Shadow Archer',emoji:'🏹',level:1,xp:40,xpNeeded:100,power:95, unlocked:true, ability:'Rain of Arrows'},
-    {id:'mage',  name:'Storm Mage',   emoji:'🧙',level:0,xp:0, xpNeeded:200,power:180,unlocked:false,ability:'Chain Lightning'},
-    {id:'dragon',name:'Dragon Rider', emoji:'🐉',level:0,xp:0, xpNeeded:500,power:400,unlocked:false,ability:"Dragon's Breath"},
+    {id:'kaiman',name:'Kai Man',emoji:'🗑️',level:1,xp:0,xpNeeded:100,power:110,unlocked:true,ability:'Grown Man Screams',garrisonBuff:'goldProd',garrisonDesc:'+10% Gold Mine production',garrisonMult:0.10},
   ],
+  decaySquad:[
+    {id:'scrappy',   name:'Scrappy the Raccoon', emoji:'🦝', rarity:'common', shards:0, shardsNeeded:20,  unlocked:false, level:0, ability:'Steals 5% enemy loot.',          garrisonBuff:'goldProd',    garrisonDesc:'+10% Gold Mine production',       garrisonMult:0.10},
+    {id:'cardboard', name:'Cardboard Knight',    emoji:'📦', rarity:'common', shards:0, shardsNeeded:20,  unlocked:false, level:0, ability:'Absorbs next 3 hits.',           garrisonBuff:'conTime',     garrisonDesc:'-5% Construction time globally',  garrisonMult:0.05},
+    {id:'mary',      name:'Moldy Mary',          emoji:'🍄', rarity:'rare',   shards:0, shardsNeeded:50,  unlocked:false, level:0, ability:'Slows enemy attack speed.',      garrisonBuff:'farmProd',    garrisonDesc:'+15% Farm production',            garrisonMult:0.15},
+    {id:'sludge',    name:'Sir Sludge-a-lot',    emoji:'💧', rarity:'rare',   shards:0, shardsNeeded:50,  unlocked:false, level:0, ability:'Increases enemy miss chance.',  garrisonBuff:'trainTime',   garrisonDesc:'-10% Troop training time',        garrisonMult:0.10},
+    {id:'alchemist', name:'Aluminum Alchemist',  emoji:'⚗️', rarity:'rare',   shards:0, shardsNeeded:50,  unlocked:false, level:0, ability:"Heavy dmg to 'Clean' armor.",  garrisonBuff:'upgCost',     garrisonDesc:'5% Gold rebate on upgrades',      garrisonMult:0.05},
+    {id:'rottop',    name:'Rot-Top the Zombie',  emoji:'🧟', rarity:'rare',   shards:0, shardsNeeded:50,  unlocked:false, level:0, ability:'Boosts ally attack power.',     garrisonBuff:'overflowProd',garrisonDesc:'2h production past cap',          garrisonMult:0},
+    {id:'lint',      name:'Lady Lint',           emoji:'🕸️', rarity:'legend', shards:0, shardsNeeded:100, unlocked:false, level:0, ability:'AOE Static Stun (3s).',         garrisonBuff:'gemAch',      garrisonDesc:'+25% Gems from Achievements',     garrisonMult:0.25},
+    {id:'compost',   name:'King Compost',        emoji:'👑', rarity:'legend', shards:0, shardsNeeded:100, unlocked:false, level:0, ability:'HP Drain Swarm.',               garrisonBuff:'foodCap',     garrisonDesc:'+50% Food Storage capacity',      garrisonMult:0.50},
+    {id:'golem',     name:'Garbage Golem',       emoji:'🗿', rarity:'legend', shards:0, shardsNeeded:100, unlocked:false, level:0, ability:'Persistent AOE Damage.',        garrisonBuff:'clanHP',      garrisonDesc:'+100% Castle HP in Clan Wars',    garrisonMult:1.00},
+    {id:'prince',    name:'Plastic Prince',      emoji:'🤴', rarity:'legend', shards:0, shardsNeeded:100, unlocked:false, level:0, ability:'Temporary Invincibility.',      garrisonBuff:'marketGold',  garrisonDesc:'+20% Gold value in Market trades',garrisonMult:0.20},
+  ],
+  garrison:{},
   clan:{name:'Trash Pandas',tag:'#TP4KG2',level:4,members:[
     {name:'You',emoji:'🫵',trophies:0,rank:'Leader'},
     {name:'Thornwood',emoji:'⚔️',trophies:380,rank:'Co-Leader'},
@@ -1134,7 +1435,10 @@ let G={
   ]},
   selTroop: 'swordsman',
   achieved: [],
-  achClaimed: []
+  achClaimed: [],
+  overflowExpiry: null,
+  overflowBonus: 0,
+  smugglerLoot: 0,
 };
 
 // ═══════════════ SAVE/LOAD SYSTEM ═══════════════
@@ -1149,9 +1453,35 @@ function saveGame() {
       const parsed = JSON.parse(savedData);
       G = Object.assign(G, parsed);
       
-      // Fallbacks for older saves
       G.achieved = G.achieved || [];
       G.achClaimed = G.achClaimed || [];
+      G.overflowExpiry = G.overflowExpiry || null;
+      G.overflowBonus = G.overflowBonus || 0;
+      G.smugglerLoot = G.smugglerLoot || 0;
+      G.garrison = G.garrison || {};
+      
+      // Merge saved decaySquad shards/unlocked into default roster (preserves new heroes added later)
+      if (parsed.decaySquad) {
+        G.decaySquad.forEach(h => {
+          const saved = parsed.decaySquad.find(s => s.id === h.id);
+          if (saved) { h.shards = saved.shards || 0; h.unlocked = saved.unlocked || false; h.level = saved.level || 0; }
+        });
+      }
+
+      // Migrate old hero roster → Kai Man. If save has old heroes, replace with Kai Man only.
+      const hasOldHeroes = parsed.heroes && parsed.heroes.some(h => ['knight','archer','mage','dragon'].includes(h.id));
+      if (hasOldHeroes) {
+        G.heroes = [{id:'kaiman',name:'Kai Man',emoji:'🗑️',level:1,xp:0,xpNeeded:100,power:110,unlocked:true,ability:'Grown Man Screams',garrisonBuff:'goldProd',garrisonDesc:'+10% Gold Mine production',garrisonMult:0.10}];
+        // Clear any garrison slots that referenced old hero IDs
+        Object.keys(G.garrison).forEach(slot => {
+          if (['knight','archer','mage','dragon'].includes(G.garrison[slot])) delete G.garrison[slot];
+        });
+      } else if (parsed.heroes && parsed.heroes[0]?.id === 'kaiman') {
+        // Carry forward Kai Man progress
+        G.heroes[0].xp = parsed.heroes[0].xp || 0;
+        G.heroes[0].level = parsed.heroes[0].level || 1;
+        G.heroes[0].xpNeeded = parsed.heroes[0].xpNeeded || 100;
+      }
       
       // FIX: Automatically expand old 16-slot saves into the new 60-slot empire
       if (G.buildings.length < 60) {
@@ -1172,26 +1502,26 @@ function saveGame() {
 
 // ═══════════════ CASTLE LEVELS ═══════════════
 const CL = {
-  1: { slots: 6, allowed: ['goldmine', 'farm', 'barracks'], upgCost: 500, upgTime: 60, label: 'Garbage Heap' },
-  2: { slots: 9, allowed: ['goldmine', 'farm', 'barracks', 'tower'], upgCost: 1500, upgTime: 120, label: 'Rubbish Pile' },
-  3: { slots: 12, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market'], upgCost: 4000, upgTime: 240, label: 'Junk Yard' },
-  4: { slots: 16, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market', 'stable'], upgCost: 10000, upgTime: 300, label: 'Refuse Camp' }, // 10k & 5 Min Wall
-  5: { slots: 20, allowed: ['goldmine', 'farm', 'barracks', 'tower', 'market', 'stable', 'forge'], upgCost: 25000, upgTime: 900, label: 'Scrap Settlement' },
-  6: { slots: 24, allowed: 'all', upgCost: 50000, upgTime: 1800, label: 'Dumpster District' }, // 30 Mins
-  7: { slots: 28, allowed: 'all', upgCost: 100000, upgTime: 3600, label: 'Landfill Town' }, // 1 Hr
-  8: { slots: 32, allowed: 'all', upgCost: 250000, upgTime: 7200, label: 'Waste Borough' }, // 2 Hrs
-  9: { slots: 36, allowed: 'all', upgCost: 500000, upgTime: 14400, label: 'Sludge City' }, // 4 Hrs
-  10: { slots: 40, allowed: 'all', upgCost: 1000000, upgTime: 28800, label: 'Filth Fortress' }, // 8 Hrs
-  11: { slots: 44, allowed: 'all', upgCost: 2500000, upgTime: 43200, label: 'Decay Citadel' }, // 12 Hrs
-  12: { slots: 48, allowed: 'all', upgCost: 5000000, upgTime: 64800, label: 'Rot Palace' }, // 18 Hrs
-  13: { slots: 52, allowed: 'all', upgCost: 10000000, upgTime: 86400, label: 'Mold Metropolis' }, // 1 Day
-  14: { slots: 56, allowed: 'all', upgCost: 25000000, upgTime: 172800, label: 'Grime Capital' }, // 2 Days
-  15: { slots: 60, allowed: 'all', upgCost: 50000000, upgTime: 259200, label: 'Putrid Province' }, // 3 Days
-  16: { slots: 60, allowed: 'all', upgCost: 100000000, upgTime: 345600, label: 'Rancid Realm' }, // 4 Days
-  17: { slots: 60, allowed: 'all', upgCost: 250000000, upgTime: 432000, label: 'Fetid Federation' }, // 5 Days
-  18: { slots: 60, allowed: 'all', upgCost: 500000000, upgTime: 604800, label: 'Stench Empire' }, // 7 Days
-  19: { slots: 60, allowed: 'all', upgCost: 1000000000, upgTime: 864000, label: 'Sovereign Sewer' }, // 10 Days
-  20: { slots: 60, allowed: 'all', upgCost: null, upgTime: 0, label: 'Eternal Dumpster' },
+  1: { slots: 6,  allowed: ['goldmine','farm','barracks'],                                               upgCost: 500,        upgTime: 60,    label: 'Garbage Heap' },
+  2: { slots: 9,  allowed: ['goldmine','farm','barracks','tower','vault','silo'],                        upgCost: 1500,       upgTime: 120,   label: 'Rubbish Pile' },
+  3: { slots: 12, allowed: ['goldmine','farm','barracks','tower','vault','silo','market'],               upgCost: 4000,       upgTime: 240,   label: 'Junk Yard' },
+  4: { slots: 16, allowed: ['goldmine','farm','barracks','tower','vault','silo','market','stable'],      upgCost: 10000,      upgTime: 300,   label: 'Refuse Camp' },
+  5: { slots: 20, allowed: ['goldmine','farm','barracks','tower','vault','silo','market','stable','forge'], upgCost: 25000,  upgTime: 900,   label: 'Scrap Settlement' },
+  6: { slots: 24, allowed: 'all', upgCost: 50000,      upgTime: 1800,   label: 'Dumpster District' },
+  7: { slots: 28, allowed: 'all', upgCost: 100000,     upgTime: 3600,   label: 'Landfill Town' },
+  8: { slots: 32, allowed: 'all', upgCost: 250000,     upgTime: 7200,   label: 'Waste Borough' },
+  9: { slots: 36, allowed: 'all', upgCost: 500000,     upgTime: 14400,  label: 'Sludge City' },
+  10:{ slots: 40, allowed: 'all', upgCost: 1000000,    upgTime: 28800,  label: 'Filth Fortress' },
+  11:{ slots: 44, allowed: 'all', upgCost: 2500000,    upgTime: 43200,  label: 'Decay Citadel' },
+  12:{ slots: 48, allowed: 'all', upgCost: 5000000,    upgTime: 64800,  label: 'Rot Palace' },
+  13:{ slots: 52, allowed: 'all', upgCost: 10000000,   upgTime: 86400,  label: 'Mold Metropolis' },
+  14:{ slots: 56, allowed: 'all', upgCost: 25000000,   upgTime: 172800, label: 'Grime Capital' },
+  15:{ slots: 60, allowed: 'all', upgCost: 50000000,   upgTime: 259200, label: 'Putrid Province' },
+  16:{ slots: 60, allowed: 'all', upgCost: 100000000,  upgTime: 345600, label: 'Rancid Realm' },
+  17:{ slots: 60, allowed: 'all', upgCost: 250000000,  upgTime: 432000, label: 'Fetid Federation' },
+  18:{ slots: 60, allowed: 'all', upgCost: 500000000,  upgTime: 604800, label: 'Stench Empire' },
+  19:{ slots: 60, allowed: 'all', upgCost: 1000000000, upgTime: 864000, label: 'Sovereign Sewer' },
+  20:{ slots: 60, allowed: 'all', upgCost: null,        upgTime: 0,      label: 'Eternal Dumpster' },
 };
 const cc = l => CL[Math.min(l, 20)]; // Updated to check against 20 instead of 5
 const isAllowed = t => t === 'castle' || cc(G.castleLevel).allowed === 'all' || cc(G.castleLevel).allowed.includes(t);
@@ -1199,15 +1529,17 @@ const maxBLevel = () => 3 + G.castleLevel;
 
 // ═══════════════ BUILDING DEFS ═══════════════
 const BD={
-  castle:  {e:'🏰',n:'Castle',     gc:0,  fc:0,  bt:0,   cr:1,pg:0,pf:0,desc:'The rotten heart of your trash empire. Upgrade to unlock new buildings and slots.'},
-  goldmine:{e:'⛏️',n:'Gold Mine',  gc:200,fc:0,  bt:30,  cr:1,pg:8,pf:0,desc:'Passively produces gold per second.'},
-  farm:    {e:'🌾',n:'Farm',        gc:150,fc:0,  bt:20,  cr:1,pg:0,pf:6,desc:'Produces food to train troops.'},
-  barracks:{e:'⚔️',n:'Barracks',   gc:300,fc:50, bt:60,  cr:1,pg:0,pf:0,desc:'Train your smelly but loyal trash warriors for battle.'},
-  tower:   {e:'🗼',n:'Watch Tower', gc:250,fc:30, bt:45,  cr:2,pg:0,pf:0,desc:'Keeps raiders away from your precious garbage. Unlocked at Castle Lv2.'},
-  market:  {e:'🏪',n:'Market',      gc:400,fc:100,bt:90,  cr:3,pg:4,pf:0,desc:'Sell junk for bonus gold. Unlocked at Castle Lv3.'},
-  stable:  {e:'🐎',n:'Stables',     gc:350,fc:120,bt:75,  cr:3,pg:0,pf:0,desc:'Train cavalry units. Unlocked at Castle Lv3.'},
-  forge:   {e:'🔨',n:'Forge',        gc:600,fc:100,bt:120, cr:4,pg:0,pf:0,desc:'Hammer junk into power — boosts hero upgrades. Unlocked at Castle Lv4.'},
-  wizard:  {e:'🧪',n:'Wizard Tower', gc:800,fc:150,bt:180, cr:4,pg:0,pf:0,desc:'Magical dumpster fire defense. Unlocked at Castle Lv4.'},
+  castle:  {e:'🏰',n:'Castle',     gc:0,   fc:0,   bt:0,   cr:1, pg:0,pf:0, desc:'The rotten heart of your trash empire. Upgrade to unlock new buildings and slots.'},
+  goldmine:{e:'⛏️',n:'Gold Mine',  gc:200, fc:0,   bt:30,  cr:1, pg:8,pf:0, desc:'Passively produces gold per second.'},
+  farm:    {e:'🌾',n:'Farm',        gc:150, fc:0,   bt:20,  cr:1, pg:0,pf:6, desc:'Produces food to train troops.'},
+  barracks:{e:'⚔️',n:'Barracks',   gc:300, fc:50,  bt:60,  cr:1, pg:0,pf:0, desc:'Train your smelly but loyal trash warriors for battle.'},
+  vault:   {e:'🏦',n:'Gold Vault',  gc:250, fc:0,   bt:300, cr:2, pg:0,pf:0, desc:'Stores your gold. Each level adds 1,000 capacity. Build more to hoard more!'},
+  silo:    {e:'🗄️',n:'Food Silo',  gc:200, fc:0,   bt:180, cr:2, pg:0,pf:0, desc:'Stores your food. Each level adds 500 capacity. Don\'t let it fill up!'},
+  tower:   {e:'🗼',n:'Watch Tower', gc:250, fc:30,  bt:45,  cr:2, pg:0,pf:0, desc:'Keeps raiders away from your precious garbage. Unlocked at Castle Lv2.'},
+  market:  {e:'🏪',n:'Market',      gc:400, fc:100, bt:90,  cr:3, pg:4,pf:0, desc:'Sell junk for bonus gold. Unlocked at Castle Lv3.'},
+  stable:  {e:'🐎',n:'Stables',     gc:350, fc:120, bt:75,  cr:3, pg:0,pf:0, desc:'Train cavalry units. Unlocked at Castle Lv3.'},
+  forge:   {e:'🔨',n:'Forge',        gc:600, fc:100, bt:120, cr:4, pg:0,pf:0, desc:'Hammer junk into power — boosts hero upgrades. Unlocked at Castle Lv4.'},
+  wizard:  {e:'🧪',n:'Wizard Tower', gc:800, fc:150, bt:180, cr:4, pg:0,pf:0, desc:'Magical dumpster fire defense. Unlocked at Castle Lv4.'},
 };
 
 // ═══════════════ TROOP DEFS ═══════════════
@@ -1225,8 +1557,11 @@ const ACH = [
   { id: 'c3', n: 'Junk Yard', d: 'Upgrade Castle to Lv 3', gems: 150, check: () => G.castleLevel >= 3 },
   { id: 'b5', n: 'City Planner', d: 'Build 5 structures', gems: 50, check: () => G.buildings.filter(b => b.type && b.type !== 'castle').length >= 4 },
   { id: 't10', n: 'Army Builder', d: 'Train 10 troops total', gems: 50, check: () => Object.values(G.troops).reduce((a, t) => a + t.count, 0) >= 10 },
-  { id: 'win1', n: 'First Blood', d: 'Win your first battle', gems: 75, check: () => G.trophies > 140 }
-        ];
+  { id: 'win1', n: 'First Blood', d: 'Win your first battle', gems: 75, check: () => G.trophies > 140 },
+  { id: 'alt1', n: 'Trash Summoner', d: 'Complete your first Altar pull', gems: 60, check: () => G.decaySquad.some(h => h.shards > 0) },
+  { id: 'alt2', n: 'Decay Collector', d: 'Assemble any Decay Squad hero', gems: 120, check: () => G.decaySquad.some(h => h.unlocked) },
+  { id: 'gar1', n: 'Garrison Commander', d: 'Assign a hero to a building', gems: 80, check: () => Object.keys(G.garrison).length > 0 },
+];
 
         function checkAch() {
             ACH.forEach(a => {
@@ -1258,35 +1593,191 @@ const ACH = [
             const a = ACH.find(x => x.id === id);
             if (!a || G.achClaimed.includes(id)) return;
             G.achClaimed.push(id);
-            G.gems += a.gems;
-            showToast(`+${a.gems} Gems! 💎`);
+            // Lady Lint garrison buff: +25% Gems from Achievements
+            const lintBonus = garrisonHasBuff('gemAch') ? 1.25 : 1;
+            const gemsEarned = Math.round(a.gems * lintBonus);
+            G.gems += gemsEarned;
+            const bonusText = lintBonus > 1 ? ` (Lady Lint: +25%!)` : '';
+            showToast(`+${gemsEarned} Gems! 💎${bonusText}`);
             bump('mchip'); spawnP('💎', 4); updateUI(); openAch(); saveGame();
         }
 
+
+// ═══════════════ STORAGE CAPACITY ═══════════════
+const BASE_GOLD_CAP = 500;
+const BASE_FOOD_CAP = 200;
+
+function calcMaxGold() {
+  let cap = BASE_GOLD_CAP;
+  G.buildings.forEach(b => {
+    if (b.type === 'vault' && !b.constructionEnd && b.level > 0) {
+      cap += Math.round(1000 * Math.pow(1.5, b.level - 1));
+    }
+  });
+  // Apply overflow bonus multiplier (0.2 = +20%, 0.5 = +50%, 2.0 = +200%)
+  if (G.overflowExpiry && Date.now() < G.overflowExpiry && G.overflowBonus > 0) {
+    cap = Math.round(cap * (1 + G.overflowBonus));
+  }
+  return cap;
+}
+
+function calcMaxFood() {
+  let cap = BASE_FOOD_CAP;
+  G.buildings.forEach(b => {
+    if (b.type === 'silo' && !b.constructionEnd && b.level > 0) {
+      cap += Math.round(500 * Math.pow(1.5, b.level - 1));
+    }
+  });
+  // King Compost garrison buff: +50% food storage
+  if (garrisonHasBuff('foodCap')) cap = Math.round(cap * 1.50);
+  if (G.overflowExpiry && Date.now() < G.overflowExpiry && G.overflowBonus > 0) {
+    cap = Math.round(cap * (1 + G.overflowBonus));
+  }
+  return cap;
+}
+
+// ═══════════════ GARRISON SYSTEM ═══════════════
+function garrisonHasBuff(buffId) {
+  const allHeroes = [...G.heroes, ...G.decaySquad];
+  return Object.values(G.garrison).some(heroId => {
+    const h = allHeroes.find(x => x.id === heroId);
+    return h && h.unlocked && h.garrisonBuff === buffId;
+  });
+}
+
+function garrisonBuffMult(buffId) {
+  const allHeroes = [...G.heroes, ...G.decaySquad];
+  let mult = 0;
+  Object.values(G.garrison).forEach(heroId => {
+    const h = allHeroes.find(x => x.id === heroId);
+    if (h && h.unlocked && h.garrisonBuff === buffId) mult += h.garrisonMult;
+  });
+  return mult;
+}
+
+// Get which slot this hero is garrisoned in (-1 if none)
+function heroGarrisonSlot(heroId) {
+  return Object.entries(G.garrison).find(([,v])=>v===heroId)?.[0] ?? null;
+}
+
+// Apply garrison: assign hero to slot (remove from old slot first)
+function assignGarrison(slotIdx, heroId) {
+  // Remove hero from any existing slot
+  const prev = heroGarrisonSlot(heroId);
+  if (prev !== null) delete G.garrison[prev];
+  // Remove any hero previously in this slot
+  if (slotIdx !== null) G.garrison[slotIdx] = heroId;
+  saveGame(); renderBuildings(); updateUI();
+}
+
+function removeGarrison(slotIdx) {
+  delete G.garrison[slotIdx];
+  saveGame(); renderBuildings(); updateUI();
+}
+
+// Garrison UI: called from building info modal
+function openGarrisonPicker(slotIdx) {
+  // Merge Kai Man + assembled Decay Squad heroes into one eligible pool
+  const eligibleDecay = G.decaySquad.filter(h => h.unlocked);
+  const eligibleHeroes = G.heroes.filter(h => h.unlocked);
+  const eligible = [...eligibleHeroes, ...eligibleDecay];
+  const currentHeroId = G.garrison[slotIdx] || null;
+
+  if (eligible.length === 0) {
+    showToast('Assemble a hero from the Altar first!');
+    return;
+  }
+
+  const rows = eligible.map(h => {
+    const isActive = h.id === currentHeroId;
+    const isElsewhere = heroGarrisonSlot(h.id) !== null && !isActive;
+    return `<div class="garrison-pick ${isActive?'active-garrison':''}" onclick="assignGarrison(${slotIdx},'${h.id}');closeModal();openBInfo(${slotIdx})">
+      <span class="garrison-pick-emoji">${h.emoji}</span>
+      <div><div class="garrison-pick-name">${h.name}</div><div class="garrison-pick-buff">${h.garrisonDesc}</div></div>
+      <div class="garrison-pick-status">${isActive?'✅ HERE':isElsewhere?'⚔ Deployed':'Available'}</div>
+    </div>`;
+  }).join('');
+
+  const clearBtn = currentHeroId ? `<button class="gb drk" style="margin-top:6px;width:100%" onclick="removeGarrison(${slotIdx});closeModal();openBInfo(${slotIdx})">🚪 Remove Garrison</button>` : '';
+
+  showModal(`
+    <div class="mt">🛡️ Assign Garrison</div>
+    <div class="msub">Choose a hero to station here</div>
+    <div class="msc">${rows}${clearBtn}</div>
+    <div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal();openBInfo(${slotIdx})">Cancel</button></div>
+  `);
+}
+
+// Vault upgrade cost = 115% of CURRENT max gold cap (always just out of reach naturally)
+function vaultUpgradeCost(currentLevel) {
+  // What the cap will be at currentLevel (before upgrading)
+  const currentCap = BASE_GOLD_CAP + Math.round(1000 * Math.pow(1.5, currentLevel - 1));
+  return Math.round(currentCap * 1.15);
+}
+
+// Silo upgrade cost = 115% of current max food cap
+function siloUpgradeCost(currentLevel) {
+  const currentCap = BASE_FOOD_CAP + Math.round(500 * Math.pow(1.5, currentLevel - 1));
+  return Math.round(currentCap * 1.15);
+}
 
 // ═══════════════ TICK ═══════════════
 function tick(){
   const now=Date.now(), dt=(now-G.lastTick)/1000;
   G.lastTick=now;
+
+  const maxGold = calcMaxGold();
+  const maxFood = calcMaxFood();
+  const wasGoldFull = G.gold >= maxGold;
+  const wasFoodFull = G.food >= maxFood;
+
   G.buildings.forEach(b=>{
     if(!b.type||b.constructionEnd)return;
     const d=BD[b.type];if(!d)return;
-    G.gold+=d.pg*b.level*dt; G.food+=d.pf*b.level*dt;
+    // Apply garrison production multipliers — check both heroes[] and decaySquad[]
+    const garrisonedHeroId = G.garrison[b.slot];
+    let gh = null;
+    if (garrisonedHeroId) {
+      gh = G.decaySquad.find(h => h.id === garrisonedHeroId && h.unlocked)
+        || G.heroes.find(h => h.id === garrisonedHeroId && h.unlocked);
+    }
+    let pgMult = 1, pfMult = 1;
+    if (gh && gh.unlocked) {
+      if (gh.garrisonBuff === 'goldProd' && d.pg > 0) pgMult = 1 + gh.garrisonMult;
+      if (gh.garrisonBuff === 'farmProd' && d.pf > 0) pfMult = 1 + gh.garrisonMult;
+    }
+    if (d.pg > 0 && G.gold < maxGold) G.gold += d.pg * b.level * pgMult * dt;
+    if (d.pf > 0 && G.food < maxFood) G.food += d.pf * b.level * pfMult * dt;
+    // Shatter animation: show lost resource when at cap and producing
+    if (d.pg > 0 && wasGoldFull) spawnLost('🪙', b);
+    if (d.pf > 0 && wasFoodFull) spawnLost('🌾', b);
   });
-  // Fix #8: cap resources so they don't grow forever
-  const maxGold = 5000 * Math.pow(2, G.castleLevel - 1);
-  const maxFood = 2000 * Math.pow(2, G.castleLevel - 1);
+
+  // Notify once on hitting cap
+  if (G.gold >= maxGold && !wasGoldFull) showToast('🏦 Vault full! Mines are wasting gold — upgrade or spend!');
+  if (G.food >= maxFood && !wasFoodFull) showToast('🗄️ Silo full! Farms are wasting food — upgrade or train troops!');
+
+  // Hard clamp — no passive overflow allowed, only shop bonuses can exceed cap
   G.gold = Math.min(G.gold, maxGold);
   G.food = Math.min(G.food, maxFood);
 
-  // castle upgrade done?
+  // Expire overflow bonus
+  if (G.overflowExpiry && now >= G.overflowExpiry) {
+    G.overflowExpiry = null;
+    G.overflowBonus = 0;
+    G.gold = Math.min(G.gold, calcMaxGold());
+    G.food = Math.min(G.food, calcMaxFood());
+    showToast('Overflow bonus expired — back to normal storage capacity.');
+  }
+
+  // Castle upgrade done?
   if(G.castleUpgrading&&now>=G.castleUpgrading){
     G.castleUpgrading=null; G.castleLevel++;
     const cb=G.buildings.find(b=>b.type==='castle');
     if(cb){cb.level=G.castleLevel;cb.constructionEnd=null;}
     showToast(`Your trash empire grows! Castle → Level ${G.castleLevel}! 🗑️✨`);spawnP('🏰',5);
   }
-  // troop training
+  // Troop training
   Object.entries(G.troops).forEach(([id,t])=>{
     const done=t.training.filter(tr=>now>=tr.finishAt);
     if(done.length){t.count+=done.length;t.training=t.training.filter(tr=>now<tr.finishAt);showToast(`${TD[id].e} ${TD[id].n} ×${done.length} ready!`);}
@@ -1299,9 +1790,34 @@ function tick(){
 
 // ═══════════════ UI ═══════════════
 function updateUI() {
-  document.getElementById('gval').textContent = fmt(G.gold);
-  document.getElementById('fval').textContent = fmt(G.food);
+  const maxGold = calcMaxGold();
+  const maxFood = calcMaxFood();
+  const goldFull = G.gold >= maxGold;
+  const foodFull = G.food >= maxFood;
+  const goldOver = G.gold > maxGold;  // overflow (bonus gold above cap)
+  const foodOver = G.food > maxFood;
+
+  // Resource display: show current / max
+  document.getElementById('gval').textContent = `${fmt(G.gold)} / ${fmt(maxGold)}`;
+  document.getElementById('fval').textContent = `${fmt(G.food)} / ${fmt(maxFood)}`;
   document.getElementById('mval').textContent = fmt(G.gems);
+
+  // Gold chip: red when full, pulsing gold when overflowing above cap
+  const gchip = document.getElementById('gchip');
+  const gval  = document.getElementById('gval');
+  gchip.classList.toggle('res-full', goldFull && !goldOver);
+  gchip.classList.toggle('res-overflow', goldOver);
+  gval.style.color = goldOver ? 'var(--gold)' : goldFull ? 'var(--red)' : '';
+
+  // Food chip: same logic
+  const fchip = document.getElementById('fchip');
+  const fval  = document.getElementById('fval');
+  fchip.classList.toggle('res-full', foodFull && !foodOver);
+  fchip.classList.toggle('res-overflow', foodOver);
+  fval.style.color = foodOver ? 'var(--gold)' : foodFull ? 'var(--red)' : '';
+
+  // Castle badge
+  document.getElementById('cbadge').textContent = `🏰 Lv${G.castleLevel} · ${cc(G.castleLevel).label}`;
 }
 
 function fmt(n) {
@@ -1352,7 +1868,10 @@ function renderBuildings(){
         if(rem<=0&&!isCas){b.constructionEnd=null;b.level=(b.level||0)+1;showToast(`${d.n} complete! 🎉`);}
       } else {
         const sz=isCas?'32px':b.level>=3?'28px':'24px';
-        s.innerHTML=`<span class="be" style="font-size:${sz}">${d.e}</span><div class="bn">${d.n}</div><div class="bl">Lv${b.level}</div>`;
+        const garrisonHeroId = G.garrison[i];
+        const garrisonHero = garrisonHeroId ? G.decaySquad.find(h=>h.id===garrisonHeroId) : null;
+        const garrisonBadge = garrisonHero ? `<span class="garrison-badge" title="${garrisonHero.name}">${garrisonHero.emoji}</span>` : '';
+        s.innerHTML=`<span class="be" style="font-size:${sz}">${d.e}</span><div class="bn">${d.n}</div><div class="bl">Lv${b.level}</div>${garrisonBadge}`;
         s.onclick=()=>isCas?openCastle():openBInfo(i);
       }
     }
@@ -1446,7 +1965,6 @@ function cfin(cost){
 }
 
 // ═══════════════ BUILD MENU ═══════════════
-// ═══════════════ BUILD MENU ═══════════════
 function openBuildMenu(idx){
   const rows=Object.entries(BD).filter(([k])=>k!=='castle').map(([key,d])=>{
     const ok=isAllowed(key), afford=Number(G.gold)>=d.gc && Number(G.food)>=d.fc;
@@ -1474,26 +1992,92 @@ function startBuild(idx,type){
 // ═══════════════ BUILDING INFO ═══════════════
 function openBInfo(idx){
   const b=G.buildings[idx], d=BD[b.type];
-  const uc=Math.floor(d.gc*1.6*b.level), ut=Math.floor(d.bt*b.level*1.5);
   const ml=maxBLevel(), atMax=b.level>=ml;
-  const canU=!atMax && Number(G.gold)>=uc;
-  const prod=d.pg>0?`+${d.pg*b.level}/s 🪙`:d.pf>0?`+${d.pf*b.level}/s 🌾`:'Passive';
-  
-  // Clean HTML upgrade button logic
+
+  // Vault/silo use special cost scaling; all others use standard formula
+  let uc, ut;
+  if (b.type === 'vault') {
+    uc = vaultUpgradeCost(b.level);
+    ut = Math.floor(d.bt * b.level * 1.5);
+  } else if (b.type === 'silo') {
+    uc = siloUpgradeCost(b.level);
+    ut = Math.floor(d.bt * b.level * 1.5);
+  } else {
+    uc = Math.floor(d.gc * 1.6 * b.level);
+    ut = Math.floor(d.bt * b.level * 1.5);
+  }
+
+  const canU = !atMax && Number(G.gold) >= uc;
+  const prod = d.pg>0 ? `+${d.pg*b.level}/s 🪙` : d.pf>0 ? `+${d.pf*b.level}/s 🌾` : 'Passive';
+
+  // Storage-specific stat for vault/silo
+  let storageStat = '';
+  if (b.type === 'vault' && b.level > 0) {
+    const thisCap = Math.round(1000 * Math.pow(1.5, b.level - 1));
+    const nextCap = atMax ? null : Math.round(1000 * Math.pow(1.5, b.level));
+    const totalNow = calcMaxGold();
+    storageStat = `
+      <div class="sr"><span class="sl">Gold Capacity (this vault)</span><span class="sv" style="color:var(--gold)">+${thisCap.toLocaleString()}</span></div>
+      <div class="sr"><span class="sl">Total Max Gold</span><span class="sv">${totalNow.toLocaleString()}</span></div>
+      ${nextCap ? `<div class="sr"><span class="sl">Next Level Adds</span><span class="sv" style="color:var(--gem)">+${nextCap.toLocaleString()}</span></div>` : ''}`;
+  }
+  if (b.type === 'silo' && b.level > 0) {
+    const thisCap = Math.round(500 * Math.pow(1.5, b.level - 1));
+    const nextCap = atMax ? null : Math.round(500 * Math.pow(1.5, b.level));
+    const totalNow = calcMaxFood();
+    storageStat = `
+      <div class="sr"><span class="sl">Food Capacity (this silo)</span><span class="sv" style="color:var(--green)">+${thisCap.toLocaleString()}</span></div>
+      <div class="sr"><span class="sl">Total Max Food</span><span class="sv">${totalNow.toLocaleString()}</span></div>
+      ${nextCap ? `<div class="sr"><span class="sl">Next Level Adds</span><span class="sv" style="color:var(--gem)">+${nextCap.toLocaleString()}</span></div>` : ''}`;
+  }
+
+  // Pinch-point hint for vault/silo when player can't afford
+  const isPinch = (b.type==='vault'||b.type==='silo') && !canU && !atMax;
+  const pinchHint = isPinch ? `<div style="font-size:10px;color:var(--orange);text-align:center;margin-top:6px;padding:6px;background:#1a1505;border-radius:6px;border:1px solid var(--orange)33">💡 Vault full = mines waste gold. Buy a <b style="color:var(--gold)">Vault Key</b> from the Shop to temporarily exceed your cap and upgrade!</div>` : '';
+
+  // Garrison panel — show on garrison-eligible buildings
+  const garrisonEligible = ['goldmine','farm','barracks'].includes(b.type);
+  let garrisonPanel = '';
+  if (garrisonEligible) {
+    const garrisonHeroId = G.garrison[idx] || null;
+    // Check both hero pools
+    const garrisonHero = garrisonHeroId
+      ? (G.decaySquad.find(h=>h.id===garrisonHeroId) || G.heroes.find(h=>h.id===garrisonHeroId))
+      : null;
+    garrisonPanel = `
+      <div style="margin-top:10px;padding:9px;background:#0d1020;border:1px solid ${garrisonHero?'var(--purple)':'var(--border)'};border-radius:8px">
+        <div style="font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:6px">🛡️ GARRISON SLOT</div>
+        ${garrisonHero
+          ? `<div style="display:flex;align-items:center;gap:9px">
+               <span style="font-size:28px">${garrisonHero.emoji}</span>
+               <div style="flex:1"><div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700">${garrisonHero.name}</div><div style="font-size:10px;color:var(--gem);margin-top:1px">${garrisonHero.garrisonDesc}</div></div>
+               <button class="gb pur" style="flex:none;padding:5px 9px;font-size:10px" onclick="closeModal();openGarrisonPicker(${idx})">Change</button>
+             </div>`
+          : `<div style="text-align:center;padding:4px 0">
+               <div style="font-size:11px;color:var(--text-dim);margin-bottom:7px">No hero stationed here</div>
+               <button class="gb pur" style="width:100%;font-size:10px;padding:7px" onclick="closeModal();openGarrisonPicker(${idx})">⚔ Assign Hero</button>
+             </div>`
+        }
+      </div>`;
+  }
+
   let upgBtn = '';
   if (!atMax) {
-      if (canU) { upgBtn = `<button class="gb gld" onclick="upgB(${idx})">⬆ Upgrade</button>`; }
-      else { upgBtn = `<button class="gb gld" onclick="showToast('Not enough gold!')" style="opacity:.45">⬆ Upgrade</button>`; }
+    if (canU) { upgBtn = `<button class="gb gld" onclick="upgB(${idx})">⬆ Upgrade</button>`; }
+    else { upgBtn = `<button class="gb gld" onclick="showToast('Not enough gold — buy overflow from Shop to bridge the gap!')" style="opacity:.45">⬆ Upgrade</button>`; }
   }
-  
+
   showModal(`
     <span style="font-size:48px;display:block;text-align:center;margin:4px 0">${d.e}</span>
     <div class="mt">${d.n}</div><div class="msub">${d.desc}</div>
     <div style="margin:8px 0">
       <div class="sr"><span class="sl">Level</span><span class="sv">${b.level} / ${ml}</span></div>
       <div class="sr"><span class="sl">Output</span><span class="sv">${prod}</span></div>
-      ${!atMax?`<div class="sr"><span class="sl">Upgrade Cost</span><span class="sv">🪙 ${uc.toLocaleString()}</span></div><div class="sr"><span class="sl">Upgrade Time</span><span class="sv">⏱ ${fmtT(ut*1000)}</span></div>`:`<div class="sr"><span class="sl">Status</span><span class="sv" style="color:var(--gold)">MAXED at Castle Lv${G.castleLevel} 🗑️</span></div>`}
+      ${storageStat}
+      ${!atMax ? `<div class="sr"><span class="sl">Upgrade Cost</span><span class="sv">🪙 ${uc.toLocaleString()}</span></div><div class="sr"><span class="sl">Upgrade Time</span><span class="sv">⏱ ${fmtT(ut*1000)}</span></div>` : `<div class="sr"><span class="sl">Status</span><span class="sv" style="color:var(--gold)">MAXED at Castle Lv${G.castleLevel} 🗑️</span></div>`}
     </div>
+    ${pinchHint}
+    ${garrisonPanel}
     <div class="br">
       <button class="gb drk" onclick="closeModal()">Close</button>
       ${upgBtn}
@@ -1502,9 +2086,19 @@ function openBInfo(idx){
 }
 function upgB(idx){
   const b=G.buildings[idx], d=BD[b.type];
-  const cost=Math.floor(d.gc*1.6*b.level), dur=Math.floor(d.bt*b.level*1.5)*1000;
-  G.gold-=cost; b.constructionEnd=Date.now()+dur; b.constructionDuration=dur;
-  closeModal();showToast(`Upgrading ${d.n} to Lv${b.level+1}…`);updateUI();renderBuildings();saveGame();
+  let cost, dur;
+  if (b.type === 'vault') {
+    cost = vaultUpgradeCost(b.level);
+    dur = Math.floor(d.bt * b.level * 1.5) * 1000;
+  } else if (b.type === 'silo') {
+    cost = siloUpgradeCost(b.level);
+    dur = Math.floor(d.bt * b.level * 1.5) * 1000;
+  } else {
+    cost = Math.floor(d.gc * 1.6 * b.level);
+    dur = Math.floor(d.bt * b.level * 1.5) * 1000;
+  }
+  G.gold -= cost; b.constructionEnd = Date.now() + dur; b.constructionDuration = dur;
+  closeModal(); showToast(`Upgrading ${d.n} to Lv${b.level+1}…`); updateUI(); renderBuildings(); saveGame();
 }
 
 // ═══════════════ SPEEDUP ═══════════════
@@ -1535,101 +2129,265 @@ function finNow(idx,cost){
 function openTroops() {
   const brx = G.buildings.find(b => b.type === 'barracks' && !b.constructionEnd);
   let h = `<div class="mt">⚔️ Troop Training</div>`;
-  if (!brx) { h += `<div class="msub" style="color:var(--orange)">Build a Barracks first — even trash lords need soldiers!</div>`; }
-  else {
+  if (!brx) {
+    h += `<div class="msub" style="color:var(--orange)">Build a Barracks first — even trash lords need soldiers!</div>`;
+  } else {
     const brxLvl = brx.level;
-    const speedMult = Math.pow(0.85, brxLvl - 1); // 15% faster per Barracks level
-    
-    h += `<div class="msub">Barracks Lv${brxLvl} — Recruit your army of trash warriors (+${Math.round((1 - speedMult)*100)}% speed boost)</div><div class="msc"><div class="tgrid">`;
-    Object.entries(TD).forEach(([id, d]) => {
-      const realTt = d.tt * speedMult; // Apply speed boost to UI
-      const t=G.troops[id], unlk=G.castleLevel>=d.cr;
-      const afford=G.gold>=d.gc&&G.food>=d.fc;
-      const now=Date.now();
-      const next=t.training.length>0?fmtT(Math.max(0,t.training[0].finishAt-now)):'';
-      const pct=t.training.length>0?Math.round((1-(t.training[0].finishAt-now)/(d.tt*1000))*100):0;
-      h+=`<div class="tc">
-        ${t.count>0?`<span class="tcb">${t.count}</span>`:''}
-        <span class="tce">${d.e}</span>
-        <div class="tcn">${d.n}</div>
-        <div class="tcs">❤️${d.hp} ⚔️${d.dmg}</div>
-        <div class="tcc">🪙${d.gc} 🌾${d.fc}</div>
-        ${!unlk?`<div style="font-size:9px;color:var(--red);margin-top:3px">Castle Lv${d.cr}</div>`:
-          `<button class="ttr" onclick="trainTroop('${id}')" ${afford?'':''} style="${afford?'':'opacity:.5;cursor:not-allowed'}">${afford?`+Train (${fmtT(realTt * 1000)})`:'Need Resources'}</button>`}
-        ${t.training.length>0?`<div class="tpb"><div class="tpf" style="width:${pct}%"></div></div><div style="font-size:8px;color:var(--blue);margin-top:2px">${t.training.length} training · ${next}</div>`:''}
-      </div>`;
-    });
-    h+=`</div>`;
-    // army summary
-    const total=Object.values(G.troops).reduce((a,t)=>a+t.count,0);
-    h+=`<div style="margin-top:12px;font-family:'Cinzel',serif;font-size:12px;color:var(--text-dim);margin-bottom:6px">🗑️ Your Trash Army (${total} warriors)</div>`;
-    Object.entries(TD).forEach(([id,d])=>{
-      const t=G.troops[id];
-      if(t.count>0) h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;margin-bottom:5px"><span style="font-size:24px">${d.e}</span><div style="flex:1"><div style="font-family:'Cinzel',serif;font-size:11px">${d.n} ×${t.count}</div><div style="font-size:10px;color:var(--blue)">⚔ Dmg:${d.dmg} ❤ HP:${d.hp}</div></div></div>`;
-    });
-    if(total===0) h+=`<div style="text-align:center;color:var(--text-dim);font-size:12px;padding:8px">No warriors yet. Your trash kingdom is defenseless! 😬</div>`;
-    h+=`</div>`;
+    const speedMult = Math.pow(0.85, brxLvl - 1);
+    h += `<div class="msub">Barracks Lv${brxLvl} — Recruit your army of trash warriors (+${Math.round((1 - speedMult)*100)}% speed boost)</div>`;
+    h += `<div class="msc" id="troop-msc"></div>`; // Wrapper for dynamic content
   }
-  h+=`<div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button><button class="gb gld" onclick="closeModal();setTab('b')">⚡ Battle!</button></div>`;
+  h += `<div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button><button class="gb gld" onclick="closeModal();setTab('b')">⚡ Battle!</button></div>`;
   showModal(h);
+  
+  if (brx) {
+    renderTroopUIInPlace();
+  }
 }
+
+function renderTroopUIInPlace() {
+  const brx = G.buildings.find(b => b.type === 'barracks' && !b.constructionEnd);
+  const scrollArea = document.getElementById('troop-msc');
+  if (!scrollArea || !brx) return;
+
+  const brxLvl = brx.level;
+  const speedMult = Math.pow(0.85, brxLvl - 1);
+  
+  let newHtml = `<div class="tgrid">`;
+  Object.entries(TD).forEach(([id, d]) => {
+    const realTt = d.tt * speedMult;
+    const t = G.troops[id];
+    const unlk = G.castleLevel >= d.cr;
+    const afford = G.gold >= d.gc && G.food >= d.fc;
+    const now = Date.now();
+    const next = t.training.length > 0 ? fmtT(Math.max(0, t.training[0].finishAt - now)) : '';
+    const pct = t.training.length > 0 ? Math.round((1 - (t.training[0].finishAt - now) / (realTt * 1000)) * 100) : 0;
+    
+    newHtml += `<div class="tc">
+      ${t.count > 0 ? `<span class="tcb">${t.count}</span>` : ''}
+      <span class="tce">${d.e}</span>
+      <div class="tcn">${d.n}</div>
+      <div class="tcs">❤️${d.hp} ⚔️${d.dmg}</div>
+      <div class="tcc">🪙${d.gc} 🌾${d.fc}</div>
+      ${!unlk ? `<div style="font-size:9px;color:var(--red);margin-top:3px">Castle Lv${d.cr}</div>` :
+        `<button class="ttr" onclick="trainTroop('${id}')" style="${afford ? '' : 'opacity:.5;cursor:not-allowed'}">${afford ? `+Train (${fmtT(realTt * 1000)})` : 'Need Resources'}</button>`}
+      ${t.training.length > 0 ? `<div class="tpb"><div class="tpf" style="width:${pct}%"></div></div><div style="font-size:8px;color:var(--blue);margin-top:2px">${t.training.length} training · ${next}</div>` : ''}
+    </div>`;
+  });
+  newHtml += `</div>`;
+  
+  // Re-append the army summary
+  const total = Object.values(G.troops).reduce((a, t) => a + t.count, 0);
+  newHtml += `<div style="margin-top:12px;font-family:'Cinzel',serif;font-size:12px;color:var(--text-dim);margin-bottom:6px">🗑️ Your Trash Army (${total} warriors)</div>`;
+  Object.entries(TD).forEach(([id, d]) => {
+    const t = G.troops[id];
+    if (t.count > 0) newHtml += `<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;margin-bottom:5px"><span style="font-size:24px">${d.e}</span><div style="flex:1"><div style="font-family:'Cinzel',serif;font-size:11px">${d.n} ×${t.count}</div><div style="font-size:10px;color:var(--blue)">⚔ Dmg:${d.dmg} ❤ HP:${d.hp}</div></div></div>`;
+  });
+  if (total === 0) newHtml += `<div style="text-align:center;color:var(--text-dim);font-size:12px;padding:8px">No warriors yet. Your trash kingdom is defenseless! 😬</div>`;
+  
+  scrollArea.innerHTML = newHtml;
+}
+
 function trainTroop(id) {
   const d = TD[id];
-  if (G.gold < d.gc || G.food < d.fc) { showToast('Not enough resources!'); return; }
+  const t = G.troops[id];
+  
+  if (G.gold < d.gc || G.food < d.fc) { 
+    showToast('Insufficient resources for recruitment!'); 
+    return; 
+  }
   
   const brx = G.buildings.find(b => b.type === 'barracks');
   const speedMult = brx ? Math.pow(0.85, brx.level - 1) : 1;
   const realTt = d.tt * speedMult;
 
-  G.gold -= d.gc; G.food -= d.fc;
-  G.troops[id].training.push({ finishAt: Date.now() + realTt * 1000 });
-  showToast(`Training ${d.e} ${d.n}…`); updateUI(); closeModal(); openTroops();
+  G.gold -= d.gc; 
+  G.food -= d.fc;
+  t.training.push({ finishAt: Date.now() + (realTt * 1000) });
+
+  updateUI();
+  renderTroopUIInPlace();
+  showToast(`Recruiting ${d.e} ${d.n}...`);
+  saveGame();
 }
 
 // ═══════════════ HEROES ═══════════════
 function openHeroes(){
-  const cards=G.heroes.map((h,i)=>{
-    const pct=Math.round(h.xp/h.xpNeeded*100);
-    return h.unlocked?
-      `<div class="hc" onclick="openHD(${i})"><span class="hcb">Lv${h.level}</span><span class="hci">${h.emoji}</span><div class="hcn">${h.name}</div><div class="hcl">⚔ ${h.power+h.level*20} pw</div><div style="font-size:8px;color:var(--text-dim)">${h.ability}</div><div class="xpb"><div class="xpf" style="width:${pct}%"></div></div><div style="font-size:8px;color:var(--text-dim);margin-top:2px">${h.xp}/${h.xpNeeded} XP</div></div>`:
-      `<div class="hc lkd" onclick="openHU(${i})"><span class="hci">${h.emoji}</span><div class="hcn">${h.name}</div><div style="font-size:9px;color:var(--gem);margin-top:3px">🔒 ${300+i*200} 💎</div><div style="font-size:8px;color:var(--text-dim)">${h.ability}</div></div>`;
-  }).join('');
-  showModal(`<div class="mt">🌟 Heroes</div><div class="msub">The legendary champions of trash</div><div class="msc"><div class="hgrid">${cards}</div></div><div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button></div>`);
-}
-function openHD(i){
-  const h=G.heroes[i]; const uc=h.level*80; const pct=Math.round(h.xp/h.xpNeeded*100);
-  const canU=G.gems>=uc&&h.xp>=h.xpNeeded;
+  const kai = G.heroes[0];
+  const pct = Math.round(kai.xp / kai.xpNeeded * 100);
+  const power = 110 + (kai.level * 20);
+
+  // Garrison status for Kai Man
+  const kaiSlot = heroGarrisonSlot('kaiman');
+  const kaiGarrisonBuilding = kaiSlot !== null ? G.buildings[kaiSlot] : null;
+  const kaiGarrisonLabel = kaiGarrisonBuilding
+    ? `⚔ Garrisoned at ${BD[kaiGarrisonBuilding.type]?.n || 'Building'}`
+    : '🏕 Not garrisoned';
+
+  // Decay Squad assembled heroes
+  const assembled = G.decaySquad.filter(h => h.unlocked);
+
+  const decayTeaser = `
+    <div style="margin-top:10px;padding:10px;background:linear-gradient(135deg,#1a0828,#0d0818);border:1px solid #6c2fa055;border-radius:9px;cursor:pointer" onclick="closeModal();setTab('a')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--purple)">🔮 Decay Squad</div>
+        <div style="font-size:10px;color:var(--gem)">${assembled.length}/10 assembled →</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">${G.decaySquad.slice(0,8).map(h=>`<span style="font-size:18px;${h.unlocked?'':'filter:grayscale(1);opacity:.35'}">${h.emoji}</span>`).join('')}</div>
+      <div style="font-size:10px;color:var(--orange)">⚠ Kai Man's single-target stun won't cut it at Cleanington.</div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:2px">Pull at the Altar for AOE heroes like Lady Lint & King Compost</div>
+    </div>`;
+
   showModal(`
-    <span style="font-size:52px;display:block;text-align:center;margin:4px 0">${h.emoji}</span>
-    <div class="mt">${h.name}</div><div class="msub">Level ${h.level} · ${h.ability}</div>
+    <div class="mt">🌟 Heroes</div>
+    <div class="msub">Your champions of the trash empire</div>
+    <div class="msc">
+      <div style="background:linear-gradient(145deg,#1e2d45,#151e30);border:1px solid var(--border-bright);border-radius:11px;padding:12px;text-align:center;cursor:pointer;position:relative" onclick="openHD(0)">
+        <span style="position:absolute;top:6px;right:8px;background:var(--purple);color:#fff;font-family:'Cinzel',serif;font-size:8px;font-weight:700;padding:2px 6px;border-radius:6px">Lv${kai.level}</span>
+        <span style="font-size:52px;display:block;margin:4px 0;filter:drop-shadow(0 0 10px #9b59b655)">${kai.emoji}</span>
+        <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:700">${kai.name}</div>
+        <div style="font-size:10px;color:var(--purple);margin-top:2px">${kai.ability}</div>
+        <div style="font-size:10px;color:var(--gold);margin-top:2px">⚔ ${power} Power</div>
+        <div style="font-size:9px;color:var(--gem);margin-top:1px">${kai.garrisonDesc}</div>
+        <div style="height:5px;background:#ffffff13;border-radius:3px;margin:8px 0 4px">
+          <div style="height:100%;width:${pct}%;background:var(--purple);border-radius:3px;transition:width .5s"></div>
+        </div>
+        <div style="font-size:9px;color:var(--text-dim)">${kai.xp} / ${kai.xpNeeded} XP · ${kaiGarrisonLabel}</div>
+      </div>
+      ${decayTeaser}
+    </div>
+    <div class="br" style="margin-top:10px">
+      <button class="gb drk" onclick="closeModal()">Close</button>
+      <button class="gb pur" onclick="closeModal();setTab('a')">🔮 Pull More Heroes</button>
+    </div>
+  `);
+}
+
+function openHD(i){
+  const h = G.heroes[i];
+  const power = 110 + (h.level * 20);
+  const nextPower = 110 + ((h.level + 1) * 20);
+  const pct = Math.round(h.xp / h.xpNeeded * 100);
+  const isLv5Plus = h.level >= 5;
+
+  // LOGIC PIVOT: Kai Man uses Food. Others use Gems.
+  const isKaiMan = h.id === 'kaiman';
+  const upgradeCost = isKaiMan ? (h.level * 500) : (h.level * 80);
+  const currencyIcon = isKaiMan ? '🌾' : '💎';
+  
+  // Resource Check logic
+  const hasResources = isKaiMan ? (G.food >= upgradeCost) : (G.gems >= upgradeCost);
+  const canU = hasResources && h.xp >= h.xpNeeded;
+
+  // Garrison info
+  const kaiSlot = heroGarrisonSlot(h.id);
+  const garrisonStatus = kaiSlot !== null
+    ? `<div style="font-size:10px;color:var(--gem);margin-top:3px">⚔ Garrisoned · ${h.garrisonDesc}</div>`
+    : `<div style="font-size:10px;color:var(--text-dim);margin-top:3px">Not garrisoned — assign to a Gold Mine for +10% output</div>`;
+
+  const scalingWarn = isLv5Plus
+    ? `<div style="margin-top:7px;padding:7px 9px;background:#1a1000;border:1px solid var(--orange)44;border-radius:7px;font-size:10px;color:var(--orange)">⚠ Kai Man's scaling slows after Lv5. Rare & Legendary heroes from the Altar are now mathematically superior.</div>`
+    : '';
+
+  showModal(`
+    <span style="font-size:60px;display:block;text-align:center;margin:4px 0;filter:drop-shadow(0 0 16px #9b59b677)">${h.emoji}</span>
+    <div class="mt">${h.name}</div>
+    <div class="msub">Level ${h.level} · ${h.ability}</div>
     <div style="margin:8px 0">
-      <div class="sr"><span class="sl">Power</span><span class="sv">${h.power+h.level*20}</span></div>
-      <div class="sr"><span class="sl">XP</span><span class="sv">${h.xp} / ${h.xpNeeded}</span></div>
-      <div class="sr"><span class="sl">Upgrade</span><span class="sv">${uc} 💎</span></div>
+      <div class="sr"><span class="sl">Power</span><span class="sv">${power} → ${nextPower}</span></div>
+      <div class="sr"><span class="sl">XP Progress</span><span class="sv">${h.xp} / ${h.xpNeeded}</span></div>
+      <div class="sr"><span class="sl">Level Up Cost</span><span class="sv">${upgradeCost} ${currencyIcon}</span></div>
     </div>
-    <div style="height:5px;background:#ffffff11;border-radius:3px;margin-bottom:10px"><div style="height:100%;width:${pct}%;background:var(--purple);border-radius:3px"></div></div>
-    <div class="br">
+    <div style="height:6px;background:#ffffff11;border-radius:3px;margin-bottom:5px">
+      <div style="height:100%;width:${pct}%;background:var(--purple);border-radius:3px;transition:width .5s"></div>
+    </div>
+    ${garrisonStatus}
+    ${scalingWarn}
+    <div class="br" style="margin-top:10px">
       <button class="gb drk" onclick="closeModal();openHeroes()">Back</button>
-      <button class="gb gem" onclick="${canU?`upgH(${i})`:'showToast(\"Fill XP first!\")'}" style="${canU?'':'opacity:.45'}">⬆ Level Up</button>
+      <button class="gb ${isKaiMan ? 'grn' : 'gem'}" onclick="${canU ? `upgH(${i})` : `showToast('Need XP & ${isKaiMan ? 'Food' : 'Gems'}!')`}" style="${canU ? '' : 'opacity:.45'}">⬆ Level Up</button>
     </div>
-    <button class="gb pur" style="margin-top:7px;width:100%" onclick="earnXP(${i})">⚔ Train (+15 XP)</button>
-  `,true);
+    <div style="display:flex;gap:7px;margin-top:7px">
+      <button class="gb pur" style="flex:1" onclick="earnXP(${i})">⚔ Train (+15 XP)</button>
+      <button class="gb drk" style="flex:1" onclick="closeModal();openGarrisonPicker_hero('${h.id}')">🏕 Garrison</button>
+    </div>
+  `, true);
 }
+
 function upgH(i){
-  const h=G.heroes[i]; G.gems-=h.level*80;
-  h.level++;h.xp=0;h.xpNeeded=Math.floor(h.xpNeeded*1.5);
-  closeModal();showToast(`${h.name} → Level ${h.level}! 🌟`);spawnP('🌟',5);updateUI();saveGame();
+  const h = G.heroes[i];
+  const isKaiMan = h.id === 'kaiman';
+  const cost = isKaiMan ? (h.level * 500) : (h.level * 80);
+
+  // 1. Final state verification
+  if (isKaiMan) {
+    if (G.food < cost) { showToast('Insufficient Food!'); return; }
+    G.food -= cost; // Execute the Food Sink
+  } else {
+    if (G.gems < cost) { showToast('Insufficient Gems!'); return; }
+    G.gems -= cost;
+  }
+
+  if (h.xp < h.xpNeeded) return;
+
+  // 2. State Mutation
+  h.level++;
+  h.xp = 0;
+  // XP needed scales: ×1.5 per level, decelerates after Lv5
+  h.xpNeeded = h.level <= 5
+    ? Math.floor(h.xpNeeded * 1.5)
+    : Math.floor(h.xpNeeded * 2.0); // steeper past Lv5 = manufactured friction
+
+  // 3. UI Sync
+  closeModal();
+  updateUI(); // Immediate Topbar update
+  saveGame();
+  
+  showToast(`${h.emoji} ${h.name} → Level ${h.level}! ⚔ ${110 + h.level * 20} Power`);
+  spawnP(isKaiMan ? '🌾' : '🌟', 5);
 }
-function earnXP(i){G.heroes[i].xp=Math.min(G.heroes[i].xpNeeded,G.heroes[i].xp+15);closeModal();openHD(i);showToast('+15 XP!');}
-function openHU(i){
-  const h=G.heroes[i]; const cost=300+i*200;
-  showModal(`<span style="font-size:52px;display:block;text-align:center;margin:4px 0">${h.emoji}</span><div class="mt">${h.name}</div><div class="msub">${h.ability}</div><div class="sr" style="margin:8px 0"><span class="sl">Base Power</span><span class="sv">${h.power}</span></div><div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Cancel</button><button class="gb gem" onclick="unlkH(${i},${cost})">🔓 Unlock · ${cost} 💎</button></div>`,true);
+
+function earnXP(i){
+  G.heroes[i].xp = Math.min(G.heroes[i].xpNeeded, G.heroes[i].xp + 15);
+  closeModal();
+  openHD(i);
+  showToast('+15 XP! Keep training Kai Man!');
 }
-function unlkH(i,cost){
-  if(G.gems<cost){showToast('Not enough gems!');return;}
-  G.gems-=cost;G.heroes[i].unlocked=true;G.heroes[i].level=1;
-  closeModal();showToast(`${G.heroes[i].name} joins your trash army! 🎉`);spawnP('⚔️',4);updateUI();saveGame();
+
+// Open garrison picker anchored to a specific hero (finds eligible buildings)
+function openGarrisonPicker_hero(heroId) {
+  const eligible = G.buildings.filter(b => b.type && ['goldmine','farm','barracks'].includes(b.type) && !b.constructionEnd);
+  const h = G.heroes.find(x => x.id === heroId) || G.decaySquad.find(x => x.id === heroId);
+  if (!h) return;
+  if (eligible.length === 0) { showToast('Build a Gold Mine, Farm, or Barracks first!'); return; }
+
+  const currentSlot = heroGarrisonSlot(heroId);
+  const rows = eligible.map(b => {
+    const isActive = String(currentSlot) === String(b.slot);
+    const d = BD[b.type];
+    return `<div class="garrison-pick ${isActive ? 'active-garrison' : ''}" onclick="assignGarrison(${b.slot},'${heroId}');closeModal();showToast('${h.name} garrisoned! ${h.garrisonDesc}')">
+      <span class="garrison-pick-emoji">${d.e}</span>
+      <div><div class="garrison-pick-name">${d.n} Lv${b.level}</div><div class="garrison-pick-buff">${h.garrisonDesc}</div></div>
+      <div class="garrison-pick-status">${isActive ? '✅ HERE' : 'Assign'}</div>
+    </div>`;
+  }).join('');
+
+  const clearBtn = currentSlot !== null
+    ? `<button class="gb drk" style="margin-top:6px;width:100%" onclick="removeGarrison(${currentSlot});closeModal();showToast('${h.name} unassigned.')">🚪 Remove from Garrison</button>`
+    : '';
+
+  showModal(`
+    <span style="font-size:40px;display:block;text-align:center;margin:4px 0">${h.emoji}</span>
+    <div class="mt">Garrison ${h.name}</div>
+    <div class="msub">${h.garrisonDesc}</div>
+    <div class="msc">${rows}${clearBtn}</div>
+    <div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal();openHeroes()">Cancel</button></div>
+  `);
 }
+
+// Dead functions kept as stubs so no call-site errors on old saves
+function openHU(i){ openHeroes(); }
+function unlkH(i,cost){ openHeroes(); }
 
 // ═══════════════ CLAN ═══════════════
 function openClan(){
@@ -1830,6 +2588,213 @@ function endBattle(won=false){
   updateUI();
 }
 
+// ═══════════════ SUMMONING ALTAR ═══════════════
+const PULL_COSTS = { single: 50, ten: 450 };
+
+// Weighted pool for pulls
+const PULL_POOL = {
+  common: ['scrappy','cardboard'],
+  rare:   ['mary','sludge','alchemist','rottop'],
+  legend: ['lint','compost','golem','prince'],
+};
+
+function rollRarity() {
+  const r = Math.random() * 100;
+  if (r < 5)  return 'legend';
+  if (r < 30) return 'rare';
+  return 'common';
+}
+
+function rollPull() {
+  const rarity = rollRarity();
+  const pool = PULL_POOL[rarity];
+  const heroId = pool[Math.floor(Math.random() * pool.length)];
+  const hero = G.decaySquad.find(h => h.id === heroId);
+  // Shard count by rarity
+  const shardCounts = { common: [5,10], rare: [3,8], legend: [1,3] };
+  const [min, max] = shardCounts[rarity];
+  const shards = min + Math.floor(Math.random() * (max - min + 1));
+  return { heroId, rarity, shards, hero };
+}
+
+function doPull(count) {
+  const cost = count === 1 ? PULL_COSTS.single : PULL_COSTS.ten;
+  if (G.gems < cost) { showToast('Not enough gems! Visit Shop 💎'); return; }
+  G.gems -= cost;
+  bump('mchip');
+
+  const results = [];
+  for (let i = 0; i < count; i++) results.push(rollPull());
+
+  // Apply shards
+  let newAssemblies = [];
+  results.forEach(r => {
+    if (!r.hero) return;
+    r.hero.shards = (r.hero.shards || 0) + r.shards;
+    if (!r.hero.unlocked && r.hero.shards >= r.hero.shardsNeeded) {
+      r.hero.unlocked = true;
+      r.hero.level = 1;
+      newAssemblies.push(r.hero);
+    }
+  });
+
+  saveGame();
+  showPullAnimation(results, newAssemblies);
+}
+
+function showPullAnimation(results, newAssemblies) {
+  const overlay = document.getElementById('altar-overlay');
+  const fireEl = document.getElementById('pull-fire-emoji');
+  const labelEl = document.getElementById('pull-label');
+
+  // Stage 1: fire animation
+  overlay.classList.add('act');
+  fireEl.textContent = '🔥';
+  labelEl.textContent = 'Channeling the Dumpster…';
+
+  setTimeout(() => {
+    fireEl.textContent = '🔮';
+    labelEl.textContent = 'The spirits stir…';
+  }, 600);
+
+  setTimeout(() => {
+    overlay.classList.remove('act');
+    // Show results in altar body
+    renderAltarResults(results, newAssemblies);
+    // Feedback
+    const hasLegend = results.some(r => r.rarity === 'legend');
+    const hasRare = results.some(r => r.rarity === 'rare');
+    if (hasLegend) { spawnP('✨', 8); showToast('LEGENDARY SHARDS! 🌟 The trash gods smile!'); }
+    else if (hasRare) { spawnP('💫', 5); showToast('Rare shards obtained! ⚡'); }
+    else { spawnP('🔮', 3); showToast('Shards collected! Keep pulling!'); }
+    newAssemblies.forEach(h => {
+      setTimeout(() => { spawnP(h.emoji, 6); showToast(`${h.emoji} ${h.name} ASSEMBLED! New hero unlocked!`); }, 400);
+    });
+    updateUI();
+  }, 1400);
+}
+
+function renderAltarResults(results, newAssemblies) {
+  const body = document.getElementById('altar-body');
+
+  const resultCards = results.map(r => {
+    const rarityLabel = {common:'COMMON',rare:'RARE',legend:'LEGENDARY'}[r.rarity];
+    return `<div class="shard-result ${r.rarity}">
+      <span class="shard-result-emoji">${r.hero?.emoji || '❓'}</span>
+      <div class="shard-result-name">${r.hero?.name || 'Unknown'}</div>
+      <div style="font-size:9px;color:${r.rarity==='legend'?'var(--gold)':r.rarity==='rare'?'#5aacff':'#6a8898'};font-family:'Cinzel',serif;letter-spacing:.5px;margin:2px 0">${rarityLabel}</div>
+      <div class="shard-result-count">+${r.shards} 🔷 Shards</div>
+      <div style="font-size:10px;color:var(--text-dim)">${r.hero?.shards || 0} / ${r.hero?.shardsNeeded || '?'} total</div>
+    </div>`;
+  }).join('');
+
+  const assemblyFlash = newAssemblies.map(h =>
+    `<div style="background:linear-gradient(135deg,#2a1a00,#4a3000);border:1px solid var(--gold);border-radius:12px;padding:14px;text-align:center;margin-bottom:8px;animation:shardReveal .5s cubic-bezier(.34,1.56,.64,1)">
+      <span style="font-size:52px;display:block">${h.emoji}</span>
+      <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:900;color:var(--gold);margin-top:6px">⚡ ASSEMBLED! ⚡</div>
+      <div style="font-family:'Cinzel',serif;font-size:12px;margin-top:2px">${h.name}</div>
+      <div style="font-size:10px;color:var(--gem);margin-top:3px">${h.garrisonDesc}</div>
+    </div>`
+  ).join('');
+
+  body.innerHTML = `
+    ${assemblyFlash}
+    <div style="font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:8px">${results.length > 1 ? `${results.length}× PULL RESULTS` : 'PULL RESULT'}</div>
+    ${resultCards}
+    <div class="pull-btns" style="margin-top:12px">
+      <button class="pull-btn" onclick="doPull(1)">🔮 Pull ×1<span class="pbc">${PULL_COSTS.single} 💎</span></button>
+      <button class="pull-btn" onclick="doPull(10)">🔮 Pull ×10<span class="pbc">${PULL_COSTS.ten} 💎</span></button>
+    </div>
+    <button class="gb drk" style="width:100%;margin-top:8px;font-size:11px" onclick="renderAltarMain()">← Back to Roster</button>
+  `;
+}
+
+function renderAltarMain() {
+  const body = document.getElementById('altar-body');
+  document.getElementById('altar-gems').textContent = fmt(G.gems);
+
+  // Rarity sort order
+  const rarityOrder = {common:0,rare:1,legend:2};
+  const sorted = [...G.decaySquad].sort((a,b)=>rarityOrder[a.rarity]-rarityOrder[b.rarity]);
+
+  const cards = sorted.map(h => {
+    const pct = Math.min(100, Math.round(h.shards / h.shardsNeeded * 100));
+    const canAssemble = !h.unlocked && h.shards >= h.shardsNeeded;
+    const rarityClass = h.rarity;
+    const unlkClass = h.unlocked ? 'unlocked' : '';
+    const badgeClass = {common:'badge-common',rare:'badge-rare',legend:'badge-legend'}[h.rarity];
+    const fillClass = {common:'fill-common',rare:'fill-rare',legend:'fill-legend'}[h.rarity];
+    const rarityLabel = {common:'COMMON',rare:'RARE',legend:'LEGEND'}[h.rarity];
+
+    let actionBtn = '';
+    if (h.unlocked) {
+      const garrisonedAt = heroGarrisonSlot(h.id);
+      actionBtn = `<button class="assemble-btn" style="background:var(--bg-card);color:var(--text-dim);border:1px solid var(--border);cursor:default">${garrisonedAt !== null ? '⚔ Deployed' : '✅ Assembled'}</button>`;
+    } else if (canAssemble) {
+      actionBtn = `<button class="assemble-btn" style="background:linear-gradient(135deg,var(--gem-dark),var(--gem));color:#001a0e" onclick="assembleHero('${h.id}')">⚡ ASSEMBLE!</button>`;
+    } else {
+      actionBtn = `<button class="assemble-btn" style="background:var(--bg-card);color:var(--text-dim);border:1px solid var(--border);cursor:default">${h.shards}/${h.shardsNeeded} 🔷</button>`;
+    }
+
+    return `<div class="altar-hero-card ${rarityClass} ${unlkClass}">
+      <span class="altar-rarity-badge ${badgeClass}">${rarityLabel}</span>
+      <span style="font-size:36px;display:block;margin:8px 0 3px;${h.unlocked?'':'filter:grayscale(.7)'}">${h.emoji}</span>
+      <div style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;${h.unlocked?'':'color:var(--text-dim)'}">${h.name}</div>
+      <div style="font-size:8px;color:var(--text-dim);margin-top:2px">${h.garrisonDesc}</div>
+      <div class="shard-bar"><div class="shard-bar-fill ${fillClass}" style="width:${pct}%"></div></div>
+      ${actionBtn}
+    </div>`;
+  }).join('');
+
+  // Odds table
+  const oddsHtml = `<div style="background:#0a0618;border:1px solid #3a1060;border-radius:8px;padding:9px;margin-bottom:12px">
+    <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:6px">📊 PULL RATES</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center">
+      <div style="font-size:9px"><div style="color:#8ab0c0;font-family:'Cinzel',serif;font-weight:700">COMMON</div><div style="color:var(--text-dim)">70%</div><div style="color:#8ab0c0;font-size:8px">5–10 shards</div></div>
+      <div style="font-size:9px"><div style="color:#5aacff;font-family:'Cinzel',serif;font-weight:700">RARE</div><div style="color:var(--text-dim)">25%</div><div style="color:#5aacff;font-size:8px">3–8 shards</div></div>
+      <div style="font-size:9px"><div style="color:var(--gold);font-family:'Cinzel',serif;font-weight:700">LEGEND</div><div style="color:var(--text-dim)">5%</div><div style="color:var(--gold);font-size:8px">1–3 shards</div></div>
+    </div>
+  </div>`;
+
+  body.innerHTML = `
+    <div class="altar-pull-zone">
+      <span class="altar-cauldron">🪣</span>
+      <div class="altar-pull-title">Dumpster of Destiny</div>
+      <div class="altar-pull-sub">Spend Gems · Earn Shards · Assemble Heroes</div>
+      <div class="pull-btns">
+        <button class="pull-btn" onclick="doPull(1)">🔮 Pull ×1<span class="pbc">${PULL_COSTS.single} 💎</span></button>
+        <button class="pull-btn" onclick="doPull(10)">🔮 Pull ×10<span class="pbc">${PULL_COSTS.ten} 💎 <span style="font-size:8px;color:var(--gem)">SAVE 50</span></span></button>
+      </div>
+    </div>
+    ${oddsHtml}
+    <div style="font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:8px">🏚️ DECAY SQUAD ROSTER</div>
+    <div class="altar-roster">${cards}</div>
+    <div style="margin-top:10px;font-size:10px;color:var(--text-dim);text-align:center">Garrison assembled heroes in Mines, Farms & Barracks for global buffs!</div>
+  `;
+}
+
+function assembleHero(id) {
+  const h = G.decaySquad.find(x => x.id === id);
+  if (!h || h.unlocked || h.shards < h.shardsNeeded) return;
+  h.unlocked = true;
+  h.level = 1;
+  h.shards = h.shardsNeeded; // cap at needed (don't overflow display)
+  saveGame();
+  spawnP(h.emoji, 7);
+  showToast(`${h.emoji} ${h.name} assembled! Assign to a building for buffs!`);
+  renderAltarMain();
+}
+
+function openAltar() {
+  document.getElementById('altar-screen').classList.add('act');
+  document.getElementById('altar-gems').textContent = fmt(G.gems);
+  renderAltarMain();
+}
+
+function closeAltar() {
+  document.getElementById('altar-screen').classList.remove('act');
+}
+
 // ═══════════════ SHOP ═══════════════
 const SHOP=[
   {id:'g80',  i:'💎',n:'80 Gems',      d:'Starter pack',       p:'$0.99', gems:80},
@@ -1837,13 +2802,44 @@ const SHOP=[
   {id:'g1200',i:'💎',n:'1,200 Gems',   d:'Chest of gems',      p:'$9.99', gems:1200},
   {id:'g2600',i:'💎',n:'2,600 Gems',   d:'+200 bonus',         p:'$19.99',gems:2600,tag:'VALUE'},
   {id:'gp',   i:'🪙',n:'Gold Pack',    d:'10,000 gold now',    p:'100 💎',cost:100,type:'gold',amt:10000},
-  {id:'s1h',  i:'⚡',n:'1-Hr Speedup', d:'Any building',       p:'50 💎', cost:50, type:'spd',ms:3600000},
-  {id:'s8h',  i:'⚡',n:'8-Hr Speedup', d:'Any building',       p:'200 💎',cost:200,type:'spd',ms:28800000},
+  {id:'s1h',    i:'⚡', n:'1-Hr Speedup',  d:'Any building',                        p:'50 💎',  cost:50,  type:'spd', ms:3600000},
+  {id:'s8h',    i:'⚡', n:'8-Hr Speedup',  d:'Any building',                        p:'200 💎', cost:200, type:'spd', ms:28800000},
+  {id:'pouch',  i:'👝', n:'Small Pouch',   d:'+20% storage for 12h',                p:'15 💎',  cost:15,  type:'overflow', bonus:0.20, dur:43200000},
+  {id:'bucket', i:'🪣', n:'Golden Bucket', d:'+50% storage for 24h',                p:'50 💎',  cost:50,  type:'overflow', bonus:0.50, dur:86400000},
+  {id:'vaultkey',i:'🗝️',n:'Vault Key',    d:'+200% storage for 48h · Best Value',  p:'125 💎', cost:125, type:'overflow', bonus:2.00, dur:172800000, tag:'BEST VALUE'},
 ];
 function openShop(){
-  const items=SHOP.map(it=>`<div class="si" onclick="buyItem('${it.id}')"><span class="sii">${it.i}</span><div><div class="sin">${it.n}${it.tag?` <span style="color:var(--gem);font-size:9px">[${it.tag}]</span>`:''}</div><div class="sid">${it.d}</div></div><span class="sip">${it.p}</span></div>`).join('');
-  showModal(`<div class="mt">💎 Gem Shop</div><div class="msub">Power up your kingdom</div><div class="msc">${items}</div><div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal()">Close</button></div>`);
+  const gemItems   = SHOP.filter(it => it.gems);
+  const utilItems  = SHOP.filter(it => it.type === 'gold' || it.type === 'spd');
+  const ovItems    = SHOP.filter(it => it.type === 'overflow');
+
+  const renderItems = arr => arr.map(it => {
+    const active = it.type==='overflow' && G.overflowExpiry && Date.now()<G.overflowExpiry;
+    const timeLeft = active ? ` · ${fmtT(G.overflowExpiry-Date.now())} left` : '';
+    return `<div class="si" onclick="buyItem('${it.id}')">
+      <span class="sii">${it.i}</span>
+      <div><div class="sin">${it.n}${it.tag?` <span style="color:var(--gem);font-size:9px">[${it.tag}]</span>`:''}</div>
+      <div class="sid">${it.d}${timeLeft}</div></div>
+      <span class="sip" style="${active?'background:var(--text-dim)':''}">${active?'Active':it.p}</span>
+    </div>`;
+  }).join('');
+
+  showModal(`
+    <div class="mt">💎 Gem Shop</div>
+    <div class="msub">Power up your trash empire</div>
+    <div class="msc">
+      <div style="font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);margin-bottom:6px;letter-spacing:.5px">GEM PACKS</div>
+      ${renderItems(gemItems)}
+      <div style="font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);margin:10px 0 6px;letter-spacing:.5px">UTILITY</div>
+      ${renderItems(utilItems)}
+      <div style="font-family:'Cinzel',serif;font-size:10px;color:var(--orange);margin:10px 0 6px;letter-spacing:.5px">⚠ TEMPORARY OVERFLOW</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px">Temporarily exceed your Vault/Silo limits. Resources above cap won't be lost until the timer runs out.</div>
+      ${renderItems(ovItems)}
+    </div>
+    <div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal()">Close</button></div>
+  `);
 }
+
 function buyItem(id){
   const it=SHOP.find(s=>s.id===id);if(!it)return;
   if(it.type==='gold'){
@@ -1860,18 +2856,27 @@ function buyItem(id){
     if(G.castleUpgrading)G.castleUpgrading-=it.ms;
     showToast('Speed boost! ⚡');bump('mchip');spawnP('⚡',3);updateUI();closeModal();saveGame();return;
   }
+  if(it.type==='overflow'){
+    if(G.gems<it.cost){showToast('Not enough gems!');return;}
+    if(G.overflowExpiry && Date.now()<G.overflowExpiry){showToast('Golden Bucket already active!');return;}
+    G.gems-=it.cost;
+    G.overflowExpiry = Date.now() + 86400000; // 24 hours
+    showToast('🪣 Golden Bucket active! +50% storage for 24h');bump('mchip');spawnP('🪙',5);updateUI();closeModal();saveGame();return;
+  }
   G.gems+=it.gems;showToast(`+${it.gems} Gems! 💎`);bump('mchip');spawnP('💎',4);updateUI();closeModal();saveGame();
 }
 
 // ═══════════════ TABS ═══════════════
 function setTab(tab){
-  document.querySelectorAll('.nb').forEach((b,i)=>b.classList.toggle('active',['v','t','h','c','b','shop'][i]===tab));
+  document.querySelectorAll('.nb').forEach((b,i)=>b.classList.toggle('active',['v','t','h','a','c','b'][i]===tab));
   closeModal();
   if(tab==='t')openTroops();
   else if(tab==='h')openHeroes();
+  else if(tab==='a')openAltar();
   else if(tab==='c')openClan();
   else if(tab==='b')openBSearch();
-  else if(tab==='shop')openShop();
+  // close altar if navigating away
+  if(tab!=='a') document.getElementById('altar-screen').classList.remove('act');
 }
 
 // ═══════════════ HELPERS ═══════════════
@@ -1887,6 +2892,34 @@ function spawnP(em,n){
     p.style.left=(cx+(Math.random()-.5)*110)+'px';p.style.top=(cy+(Math.random()-.5)*70)+'px';
     document.body.appendChild(p);setTimeout(()=>p.remove(),950);
   },i*75);
+}
+
+// Shatter animation: resource icon floats up, grays out, shows LOST — only fires ~every 4s per building
+const _lostThrottle = {};
+function spawnLost(em, building) {
+  const key = `${building.slot}`;
+  const now = Date.now();
+  if (_lostThrottle[key] && now - _lostThrottle[key] < 4000) return;
+  _lostThrottle[key] = now;
+
+  // Find the building's DOM element to anchor the animation near it
+  const wi = document.getElementById('world-inner');
+  const slots = wi.querySelectorAll('.bs');
+  const el = slots[building.slot];
+  if (!el) return;
+  const rect = el.getBoundingClientRect();
+
+  const p = document.createElement('div');
+  p.style.cssText = `
+    position:fixed;pointer-events:none;z-index:600;
+    left:${rect.left + rect.width/2 - 16}px;
+    top:${rect.top + rect.height/2}px;
+    font-size:14px;display:flex;flex-direction:column;align-items:center;gap:1px;
+    animation:lostFloat 1.4s ease-out forwards;
+  `;
+  p.innerHTML = `<span style="filter:grayscale(1);opacity:.7">${em}</span><span style="font-family:'Cinzel',serif;font-size:8px;font-weight:700;color:#888;letter-spacing:.5px">LOST</span>`;
+  document.body.appendChild(p);
+  setTimeout(()=>p.remove(), 1500);
 }
 
 // ═══════════════ INIT ═══════════════
