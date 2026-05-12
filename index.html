@@ -120,6 +120,24 @@
             cursor: pointer;
             white-space: nowrap
         }
+        
+        /* Achievement Notification Red Dot */
+        @keyframes notifPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 4px var(--red); }
+            50% { transform: scale(1.2); box-shadow: 0 0 8px var(--red); }
+        }
+        #ach-notif {
+            display: none;
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 10px;
+            height: 10px;
+            background: var(--red);
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            animation: notifPulse 1.5s infinite;
+        }
 
         
 /* WORLD */
@@ -1333,7 +1351,10 @@
   <span class="castle-badge" id="cbadge" onclick="openCastle()">🏰 Lv1</span>
   <div style="display:flex; gap:6px">
     <div class="res-chip" id="ochip" style="display:none; cursor:pointer; min-width:0; padding-right:6px" onclick="openArtifactShop()"><span>☣️</span><span class="val" id="oval" style="color:#3de8a0; font-size:10px">0</span></div>
-    <div class="res-chip" style="cursor:pointer; padding-right:6px" onclick="openAch()"><span>🏆</span></div>
+    <div class="res-chip" id="ach-chip" style="cursor:pointer; padding-right:6px; position:relative" onclick="openAch()">
+        <span>🏆</span>
+        <div id="ach-notif"></div>
+    </div>
     <div class="res-chip gem-chip" id="mchip" onclick="openShop()"><span>💎</span><span class="val" id="mval">0</span></div>
   </div>
 </div>
@@ -1661,7 +1682,6 @@ function calcMaxGold() {
   }
   cap = Math.round(cap * (1 + G.artifacts.dumpster * 0.10));
   
-  // Rot-Top flat capacity buff (+15% global storage if garrisoned anywhere)
   if (garrisonHasBuff('overflowProd')) {
       cap = Math.round(cap * (1 + garrisonBuffMult('overflowProd')));
   }
@@ -1816,7 +1836,9 @@ function tick(){
   });
   
   checkAch();
-  updateUI();renderBuildings();
+  updateUI();
+  renderBuildings();
+  if (document.getElementById('troop-msc')) renderTroopUIInPlace();
   saveGame();
   setTimeout(tick,1000);
 }
@@ -1833,6 +1855,13 @@ function updateUI() {
   document.getElementById('gval').textContent = `${fmt(G.gold)} / ${fmt(maxGold)}`;
   document.getElementById('fval').textContent = `${fmt(G.food)} / ${fmt(maxFood)}`;
   document.getElementById('mval').textContent = fmt(G.gems);
+  
+  const altarGems = document.getElementById('altar-gems');
+  if (altarGems) altarGems.textContent = fmt(G.gems);
+
+  const hasUnclaimedAch = ACH.some(a => G.achieved.includes(a.id) && !G.achClaimed.includes(a.id));
+  const notif = document.getElementById('ach-notif');
+  if (notif) notif.style.display = hasUnclaimedAch ? 'block' : 'none';
   
   const maxJ = 50 + (G.artifacts.suit * 2);
   document.getElementById('jval').textContent = `${Math.floor(G.juice)}/${maxJ}`;
@@ -2392,7 +2421,8 @@ function renderTroopUIInPlace() {
     const afford = G.gold >= d.gc && G.food >= d.fc;
     const now = Date.now();
     const next = t.training.length > 0 ? fmtT(Math.max(0, t.training[0].finishAt - now)) : '';
-    const pct = t.training.length > 0 ? Math.round((1 - (t.training[0].finishAt - now) / (realTt * 1000)) * 100) : 0;
+    const rawPct = t.training.length > 0 ? (1 - (t.training[0].finishAt - now) / (realTt * 1000)) * 100 : 0;
+    const pct = Math.max(0, Math.min(100, Math.round(rawPct)));
     
     newHtml += `<div class="tc">
       ${t.count > 0 ? `<span class="tcb">${t.count}</span>` : ''}
@@ -2886,6 +2916,7 @@ function doPull(count) {
   if (G.gems < cost) { showToast('Not enough gems! Visit Shop 💎'); return; }
   G.gems -= cost;
   bump('mchip');
+  updateUI();
 
   const results = [];
   for (let i = 0; i < count; i++) results.push(rollPull());
