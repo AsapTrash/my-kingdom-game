@@ -120,30 +120,18 @@
             cursor: pointer;
             white-space: nowrap
         }
-        
-        /* Achievement Notification Red Dot */
-        @keyframes notifPulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 4px var(--red); }
-            50% { transform: scale(1.2); box-shadow: 0 0 8px var(--red); }
-        }
-        #ach-notif {
-            display: none;
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 10px;
-            height: 10px;
-            background: var(--red);
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            animation: notifPulse 1.5s infinite;
-        }
 
         
 /* WORLD */
 #world{position:fixed;top:54px;bottom:114px;left:0;right:0;overflow-y:auto;background:radial-gradient(ellipse at 50% 80%,#1a3020 0%,transparent 60%),radial-gradient(ellipse at 20% 20%,#1a2530 0%,transparent 50%),linear-gradient(180deg,#0d1520,#0d1a10)}
 #world::before{content:'';position:fixed;top:54px;bottom:114px;left:0;right:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px),repeating-linear-gradient(90deg,transparent,transparent 32px,#ffffff04 32px,#ffffff04 33px);pointer-events:none;z-index:0}
+/* Fix: world-inner is relative for scroll layout; trees use a separate fixed overlay rendered in JS */
 #world-inner{position:relative;min-height:100%;display:grid;gap:5px;padding:8px;padding-bottom:24px;z-index:1}
+
+
+
+
+
 
         /* BUILDING SLOTS */
         .bs {
@@ -1346,15 +1334,10 @@
   <div class="res-group">
     <div class="res-chip" id="gchip" style="min-width:0"><span>🪙</span><span class="val" id="gval" style="font-size:10px">0</span></div>
     <div class="res-chip" id="fchip" style="min-width:0"><span>🌾</span><span class="val" id="fval" style="font-size:10px">0</span></div>
-    <div class="res-chip" id="jchip" style="min-width:0" onclick="showJuiceInfo()"><span>🥤</span><span class="val" id="jval" style="font-size:10px">0/50</span></div>
   </div>
   <span class="castle-badge" id="cbadge" onclick="openCastle()">🏰 Lv1</span>
   <div style="display:flex; gap:6px">
-    <div class="res-chip" id="ochip" style="display:none; cursor:pointer; min-width:0; padding-right:6px" onclick="openArtifactShop()"><span>☣️</span><span class="val" id="oval" style="color:#3de8a0; font-size:10px">0</span></div>
-    <div class="res-chip" id="ach-chip" style="cursor:pointer; padding-right:6px; position:relative" onclick="openAch()">
-        <span>🏆</span>
-        <div id="ach-notif"></div>
-    </div>
+    <div class="res-chip" style="cursor:pointer; padding-right:6px" onclick="openAch()"><span>🏆</span></div>
     <div class="res-chip gem-chip" id="mchip" onclick="openShop()"><span>💎</span><span class="val" id="mval">0</span></div>
   </div>
 </div>
@@ -1372,6 +1355,7 @@
 
     <div id="toast"></div>
 
+    <!-- BATTLE SCREEN -->
     <div id="bscr">
         <div class="btb">
             <button class="gb drk" style="flex:none;padding:5px 12px;font-size:10px" onclick="endBattle()">↩ Retreat</button>
@@ -1393,6 +1377,7 @@
         </div>
     </div>
 
+    <!-- SUMMONING ALTAR SCREEN -->
     <div id="altar-screen">
         <div class="altar-fire"></div>
         <div class="altar-header">
@@ -1401,9 +1386,11 @@
             <div class="res-chip gem-chip" style="padding:4px 8px"><span>💎</span><span class="val" id="altar-gems" style="font-size:10px">0</span></div>
         </div>
         <div class="altar-body" id="altar-body">
-            </div>
+            <!-- Dynamically rendered by openAltar() -->
+        </div>
     </div>
 
+    <!-- PULL ANIMATION OVERLAY -->
     <div id="altar-overlay">
         <div class="pull-anim-wrap">
             <span class="pull-fire" id="pull-fire-emoji">🔥</span>
@@ -1413,11 +1400,9 @@
 
     <script>
 // ═══════════════ STATE ═══════════════
+// ═══════════════ STATE ═══════════════
 let G={
   gold:350,food:0,gems:250,trophies:0,
-  juice:50,lastJuiceTick:Date.now(),
-  ooze:0,
-  artifacts:{dumpster:0,rod:0,suit:0},
   lastTick:Date.now(),
   castleLevel:1,
   castleUpgrading:null,
@@ -1429,7 +1414,10 @@ let G={
   ],
   troops:{swordsman:{count:5,training:[]},archer:{count:3,training:[]},knight:{count:0,training:[]},mage:{count:0,training:[]},giant:{count:0,training:[]}},
   heroes:[
-    {id:'kaiman',name:'Kai Man',emoji:'🗑️',level:1,xp:0,xpNeeded:100,power:110,unlocked:true,ability:'Grown Man Screams',garrisonBuff:'goldProd',garrisonDesc:'+10% Gold Mine production',garrisonMult:0.10},
+    {id:'knight',name:'Iron Knight',  emoji:'🛡️',level:1,xp:0, xpNeeded:100,power:120,unlocked:true, ability:'Shield Bash'},
+    {id:'archer',name:'Shadow Archer',emoji:'🏹',level:1,xp:40,xpNeeded:100,power:95, unlocked:true, ability:'Rain of Arrows'},
+    {id:'mage',  name:'Storm Mage',   emoji:'🧙',level:0,xp:0, xpNeeded:200,power:180,unlocked:false,ability:'Chain Lightning'},
+    {id:'dragon',name:'Dragon Rider', emoji:'🐉',level:0,xp:0, xpNeeded:500,power:400,unlocked:false,ability:"Dragon's Breath"},
   ],
   decaySquad:[
     {id:'scrappy',   name:'Scrappy the Raccoon', emoji:'🦝', rarity:'common', shards:0, shardsNeeded:20,  unlocked:false, level:0, ability:'Steals 5% enemy loot.',          garrisonBuff:'goldProd',    garrisonDesc:'+10% Gold Mine production',       garrisonMult:0.10},
@@ -1437,7 +1425,7 @@ let G={
     {id:'mary',      name:'Moldy Mary',          emoji:'🍄', rarity:'rare',   shards:0, shardsNeeded:50,  unlocked:false, level:0, ability:'Slows enemy attack speed.',      garrisonBuff:'farmProd',    garrisonDesc:'+15% Farm production',            garrisonMult:0.15},
     {id:'sludge',    name:'Sir Sludge-a-lot',    emoji:'💧', rarity:'rare',   shards:0, shardsNeeded:50,  unlocked:false, level:0, ability:'Increases enemy miss chance.',  garrisonBuff:'trainTime',   garrisonDesc:'-10% Troop training time',        garrisonMult:0.10},
     {id:'alchemist', name:'Aluminum Alchemist',  emoji:'⚗️', rarity:'rare',   shards:0, shardsNeeded:50,  unlocked:false, level:0, ability:"Heavy dmg to 'Clean' armor.",  garrisonBuff:'upgCost',     garrisonDesc:'5% Gold rebate on upgrades',      garrisonMult:0.05},
-    {id:'rottop',    name:'Rot-Top the Zombie',  emoji:'🧟', rarity:'rare',   shards:0, shardsNeeded:50,  unlocked:false, level:0, ability:'Boosts ally attack power.',     garrisonBuff:'overflowProd',garrisonDesc:'+15% Global Storage Capacity',    garrisonMult:0.15},
+    {id:'rottop',    name:'Rot-Top the Zombie',  emoji:'🧟', rarity:'rare',   shards:0, shardsNeeded:50,  unlocked:false, level:0, ability:'Boosts ally attack power.',     garrisonBuff:'overflowProd',garrisonDesc:'2h production past cap',          garrisonMult:0},
     {id:'lint',      name:'Lady Lint',           emoji:'🕸️', rarity:'legend', shards:0, shardsNeeded:100, unlocked:false, level:0, ability:'AOE Static Stun (3s).',         garrisonBuff:'gemAch',      garrisonDesc:'+25% Gems from Achievements',     garrisonMult:0.25},
     {id:'compost',   name:'King Compost',        emoji:'👑', rarity:'legend', shards:0, shardsNeeded:100, unlocked:false, level:0, ability:'HP Drain Swarm.',               garrisonBuff:'foodCap',     garrisonDesc:'+50% Food Storage capacity',      garrisonMult:0.50},
     {id:'golem',     name:'Garbage Golem',       emoji:'🗿', rarity:'legend', shards:0, shardsNeeded:100, unlocked:false, level:0, ability:'Persistent AOE Damage.',        garrisonBuff:'clanHP',      garrisonDesc:'+100% Castle HP in Clan Wars',    garrisonMult:1.00},
@@ -1463,9 +1451,9 @@ let G={
 // ═══════════════ SAVE/LOAD SYSTEM ═══════════════
 function saveGame() {
    localStorage.setItem('kingdomOfTrashSave', JSON.stringify(G));
-}
+        }
 
-function loadGame() {
+        function loadGame() {
   const savedData = localStorage.getItem('kingdomOfTrashSave');
   if (savedData) {
     try {
@@ -1479,60 +1467,21 @@ function loadGame() {
       G.smugglerLoot = G.smugglerLoot || 0;
       G.garrison = G.garrison || {};
       
-      G.juice = G.juice ?? 50;
-      G.ooze = G.ooze ?? 0;
-      G.artifacts = G.artifacts || {dumpster:0, rod:0, suit:0};
-      if (!G.lastJuiceTick) G.lastJuiceTick = Date.now();
-      
+      // Merge saved decaySquad shards/unlocked into default roster (preserves new heroes added later)
       if (parsed.decaySquad) {
         G.decaySquad.forEach(h => {
           const saved = parsed.decaySquad.find(s => s.id === h.id);
           if (saved) { h.shards = saved.shards || 0; h.unlocked = saved.unlocked || false; h.level = saved.level || 0; }
         });
       }
-
-      const hasOldHeroes = parsed.heroes && parsed.heroes.some(h => ['knight','archer','mage','dragon'].includes(h.id));
-      if (hasOldHeroes) {
-        G.heroes = [{id:'kaiman',name:'Kai Man',emoji:'🗑️',level:1,xp:0,xpNeeded:100,power:110,unlocked:true,ability:'Grown Man Screams',garrisonBuff:'goldProd',garrisonDesc:'+10% Gold Mine production',garrisonMult:0.10}];
-        Object.keys(G.garrison).forEach(slot => {
-          if (['knight','archer','mage','dragon'].includes(G.garrison[slot])) delete G.garrison[slot];
-        });
-      } else if (parsed.heroes && parsed.heroes[0]?.id === 'kaiman') {
-        G.heroes[0].xp = parsed.heroes[0].xp || 0;
-        G.heroes[0].level = parsed.heroes[0].level || 1;
-        G.heroes[0].xpNeeded = parsed.heroes[0].xpNeeded || 100;
-      }
       
+      // FIX: Automatically expand old 16-slot saves into the new 60-slot empire
       if (G.buildings.length < 60) {
         const currentLength = G.buildings.length;
         const newSlots = Array.from({ length: 60 - currentLength }, (_, i) => ({ 
             slot: currentLength + i, type: null, constructionEnd: null, constructionDuration: null 
         }));
         G.buildings = G.buildings.concat(newSlots);
-      }
-
-      // Legacy Lock Fix
-      if (G.castleLevel >= 2) {
-        const hasVault = G.buildings.some(b => b.type === 'vault');
-        if (!hasVault) {
-          let targets = G.buildings.filter(b => b.type && b.type !== 'castle' && b.type !== 'vault');
-          if (targets.length > 0) {
-            targets.sort((a, b) => (a.level||0) - (b.level||0));
-            let t = targets[0];
-            if(G.garrison[t.slot]) delete G.garrison[t.slot];
-            t.type = 'vault'; t.level = 1; t.constructionEnd = null;
-          }
-        }
-        const hasSilo = G.buildings.some(b => b.type === 'silo');
-        if (!hasSilo) {
-          let targets = G.buildings.filter(b => b.type && b.type !== 'castle' && b.type !== 'silo' && b.type !== 'vault');
-          if (targets.length > 0) {
-            targets.sort((a, b) => (a.level||0) - (b.level||0));
-            let t = targets[0];
-            if(G.garrison[t.slot]) delete G.garrison[t.slot];
-            t.type = 'silo'; t.level = 1; t.constructionEnd = null;
-          }
-        }
       }
       
       G.lastTick = Date.now();
@@ -1541,6 +1490,7 @@ function loadGame() {
     }
   }
 }
+
 
 // ═══════════════ CASTLE LEVELS ═══════════════
 const CL = {
@@ -1565,7 +1515,7 @@ const CL = {
   19:{ slots: 60, allowed: 'all', upgCost: 1000000000, upgTime: 864000, label: 'Sovereign Sewer' },
   20:{ slots: 60, allowed: 'all', upgCost: null,        upgTime: 0,      label: 'Eternal Dumpster' },
 };
-const cc = l => CL[Math.min(l, 20)];
+const cc = l => CL[Math.min(l, 20)]; // Updated to check against 20 instead of 5
 const isAllowed = t => t === 'castle' || cc(G.castleLevel).allowed === 'all' || cc(G.castleLevel).allowed.includes(t);
 const maxBLevel = () => 3 + G.castleLevel;
 
@@ -1605,45 +1555,86 @@ const ACH = [
   { id: 'gar1', n: 'Garrison Commander', d: 'Assign a hero to a building', gems: 80, check: () => Object.keys(G.garrison).length > 0 },
 ];
 
-function checkAch() {
-    ACH.forEach(a => {
-        if (!G.achieved.includes(a.id) && a.check()) {
-            G.achieved.push(a.id);
-            showToast(`Achievement Unlocked: ${a.n}! 🏆`);
+        function checkAch() {
+            ACH.forEach(a => {
+                if (!G.achieved.includes(a.id) && a.check()) {
+                    G.achieved.push(a.id);
+                    showToast(`Achievement Unlocked: ${a.n}! 🏆`);
+                }
+            });
         }
-    });
+
+        function openAch() {
+            const list = ACH.map(a => {
+                const isClaimed = G.achClaimed.includes(a.id);
+                const isUnl = G.achieved.includes(a.id);
+                let btn = `<button class="gb drk" style="flex:none;width:85px" disabled>🔒 Locked</button>`;
+                if (isClaimed) btn = `<button class="gb" style="flex:none;width:85px;background:var(--bg-card);color:var(--text-dim);border:1px solid var(--border)" disabled>✅ Claimed</button>`;
+                else if (isUnl) btn = `<button class="gb gem" style="flex:none;width:85px" onclick="claimAch('${a.id}')">🎁 ${a.gems} 💎</button>`;
+
+                return `<div class="si" style="cursor:default; margin-bottom:5px">
+      <span class="sii">🏆</span>
+      <div><div class="sin">${a.n}</div><div class="sid">${a.d}</div></div>
+      ${btn}
+    </div>`;
+            }).join('');
+            showModal(`<div class="mt">🏆 Achievements</div><div class="msub">Earn gems for your progress</div><div class="msc">${list}</div><div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal()">Close</button></div>`);
+        }
+
+        function claimAch(id) {
+            const a = ACH.find(x => x.id === id);
+            if (!a || G.achClaimed.includes(id)) return;
+            G.achClaimed.push(id);
+            // Lady Lint garrison buff: +25% Gems from Achievements
+            const lintBonus = garrisonHasBuff('gemAch') ? 1.25 : 1;
+            const gemsEarned = Math.round(a.gems * lintBonus);
+            G.gems += gemsEarned;
+            const bonusText = lintBonus > 1 ? ` (Lady Lint: +25%!)` : '';
+            showToast(`+${gemsEarned} Gems! 💎${bonusText}`);
+            bump('mchip'); spawnP('💎', 4); updateUI(); openAch(); saveGame();
+        }
+
+
+// ═══════════════ STORAGE CAPACITY ═══════════════
+// SCALING NOTES (v3 rebalance):
+//   Base gold cap : 2000 * 1.6^(castleLevel-1)  — exponential so it stays meaningful
+//   Vault per lv  : 2000 * 1.8^(level-1)         — ensures 5 max-lv vaults > castle upgrade cost at every tier
+//   Base food cap : 500  * 1.5^(castleLevel-1)   — matches silo scaling
+//   Silo per lv   : 800  * 1.6^(level-1)          — proportional to food economy
+
+function calcMaxGold() {
+  // Exponential base: 2000 * 1.6^(cl-1). At CL1=2000, CL10=89k, CL17=2.7M
+  let cap = Math.round(2000 * Math.pow(1.6, G.castleLevel - 1));
+  G.buildings.forEach(b => {
+    if (b.type === 'vault' && !b.constructionEnd && b.level > 0) {
+      // 2000 * 1.8^(lv-1): At Lv1=2k, Lv10=397k, Lv20=141M
+      cap += Math.round(2000 * Math.pow(1.8, b.level - 1));
+    }
+  });
+  if (G.overflowExpiry && Date.now() < G.overflowExpiry && G.overflowBonus > 0) {
+    cap = Math.round(cap * (1 + G.overflowBonus));
+  }
+  return cap;
 }
 
-function openAch() {
-    const list = ACH.map(a => {
-        const isClaimed = G.achClaimed.includes(a.id);
-        const isUnl = G.achieved.includes(a.id);
-        let btn = `<button class="gb drk" style="flex:none;width:85px" disabled>🔒 Locked</button>`;
-        if (isClaimed) btn = `<button class="gb" style="flex:none;width:85px;background:var(--bg-card);color:var(--text-dim);border:1px solid var(--border)" disabled>✅ Claimed</button>`;
-        else if (isUnl) btn = `<button class="gb gem" style="flex:none;width:85px" onclick="claimAch('${a.id}')">🎁 ${a.gems} 💎</button>`;
-
-        return `<div class="si" style="cursor:default; margin-bottom:5px">
-<span class="sii">🏆</span>
-<div><div class="sin">${a.n}</div><div class="sid">${a.d}</div></div>
-${btn}
-</div>`;
-    }).join('');
-    showModal(`<div class="mt">🏆 Achievements</div><div class="msub">Earn gems for your progress</div><div class="msc">${list}</div><div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal()">Close</button></div>`);
+function calcMaxFood() {
+  // Exponential base: 500 * 1.5^(cl-1). At CL1=500, CL10=38k, CL17=565k
+  let cap = Math.round(500 * Math.pow(1.5, G.castleLevel - 1));
+  G.buildings.forEach(b => {
+    if (b.type === 'silo' && !b.constructionEnd && b.level > 0) {
+      // 800 * 1.6^(lv-1): proportional food storage
+      cap += Math.round(800 * Math.pow(1.6, b.level - 1));
+    }
+  });
+  // King Compost garrison buff: +50% food storage
+  if (garrisonHasBuff('foodCap')) cap = Math.round(cap * 1.50);
+  if (G.overflowExpiry && Date.now() < G.overflowExpiry && G.overflowBonus > 0) {
+    cap = Math.round(cap * (1 + G.overflowBonus));
+  }
+  return cap;
 }
 
-function claimAch(id) {
-    const a = ACH.find(x => x.id === id);
-    if (!a || G.achClaimed.includes(id)) return;
-    G.achClaimed.push(id);
-    const lintBonus = garrisonHasBuff('gemAch') ? 1.25 : 1;
-    const gemsEarned = Math.round(a.gems * lintBonus);
-    G.gems += gemsEarned;
-    const bonusText = lintBonus > 1 ? ` (Lady Lint: +25%!)` : '';
-    showToast(`+${gemsEarned} Gems! 💎${bonusText}`);
-    bump('mchip'); spawnP('💎', 4); updateUI(); openAch(); saveGame();
-}
-
-// ═══════════════ GLOBAL BUFF HELPERS ═══════════════
+// ═══════════════ GARRISON SYSTEM ═══════════════
 function garrisonHasBuff(buffId) {
   const allHeroes = [...G.heroes, ...G.decaySquad];
   return Object.values(G.garrison).some(heroId => {
@@ -1662,59 +1653,17 @@ function garrisonBuffMult(buffId) {
   return mult;
 }
 
-function getUpgCostMult() {
-    return Math.max(0, 1 - garrisonBuffMult('upgCost'));
-}
-function getConTimeMult() {
-    return Math.max(0.1, 1 - garrisonBuffMult('conTime'));
-}
-
-// ═══════════════ STORAGE CAPACITY & ARTIFACTS ═══════════════
-function calcMaxGold() {
-  let cap = 500 * G.castleLevel;
-  G.buildings.forEach(b => {
-    if (b.type === 'vault' && !b.constructionEnd && b.level > 0) {
-      cap += Math.round(1000 * Math.pow(1.5, b.level - 1));
-    }
-  });
-  if (G.overflowExpiry && Date.now() < G.overflowExpiry && G.overflowBonus > 0) {
-    cap = Math.round(cap * (1 + G.overflowBonus));
-  }
-  cap = Math.round(cap * (1 + G.artifacts.dumpster * 0.10));
-  
-  if (garrisonHasBuff('overflowProd')) {
-      cap = Math.round(cap * (1 + garrisonBuffMult('overflowProd')));
-  }
-  return cap;
-}
-
-function calcMaxFood() {
-  let cap = 200 * G.castleLevel;
-  G.buildings.forEach(b => {
-    if (b.type === 'silo' && !b.constructionEnd && b.level > 0) {
-      cap += Math.round(500 * Math.pow(1.5, b.level - 1));
-    }
-  });
-  if (garrisonHasBuff('foodCap')) cap = Math.round(cap * 1.50);
-  if (G.overflowExpiry && Date.now() < G.overflowExpiry && G.overflowBonus > 0) {
-    cap = Math.round(cap * (1 + G.overflowBonus));
-  }
-  cap = Math.round(cap * (1 + G.artifacts.dumpster * 0.10));
-  
-  if (garrisonHasBuff('overflowProd')) {
-      cap = Math.round(cap * (1 + garrisonBuffMult('overflowProd')));
-  }
-  return cap;
-}
-
-// ═══════════════ GARRISON SYSTEM ═══════════════
+// Get which slot this hero is garrisoned in (-1 if none)
 function heroGarrisonSlot(heroId) {
   return Object.entries(G.garrison).find(([,v])=>v===heroId)?.[0] ?? null;
 }
 
+// Apply garrison: assign hero to slot (remove from old slot first)
 function assignGarrison(slotIdx, heroId) {
+  // Remove hero from any existing slot
   const prev = heroGarrisonSlot(heroId);
   if (prev !== null) delete G.garrison[prev];
+  // Remove any hero previously in this slot
   if (slotIdx !== null) G.garrison[slotIdx] = heroId;
   saveGame(); renderBuildings(); updateUI();
 }
@@ -1724,14 +1673,14 @@ function removeGarrison(slotIdx) {
   saveGame(); renderBuildings(); updateUI();
 }
 
+// Garrison UI: called from building info modal
 function openGarrisonPicker(slotIdx) {
-  const eligibleDecay = G.decaySquad.filter(h => h.unlocked);
-  const eligibleHeroes = G.heroes.filter(h => h.unlocked);
-  const eligible = [...eligibleHeroes, ...eligibleDecay];
+  // Pool = Kai Man (G.heroes) + assembled Decay Squad
+  const eligible = [...G.heroes.filter(h => h.unlocked), ...G.decaySquad.filter(h => h.unlocked)];
   const currentHeroId = G.garrison[slotIdx] || null;
 
   if (eligible.length === 0) {
-    showToast('Assemble a hero from the Altar first!');
+    showToast('No heroes available — train Kai Man or assemble from the Altar!');
     return;
   }
 
@@ -1755,33 +1704,23 @@ function openGarrisonPicker(slotIdx) {
   `);
 }
 
+// Vault upgrade cost = 60% of what the NEXT level adds to capacity.
+// This keeps cost proportional and always achievable before hitting cap.
 function vaultUpgradeCost(currentLevel) {
-  const currentCap = (500 * G.castleLevel) + Math.round(1000 * Math.pow(1.5, currentLevel - 1));
-  return Math.round(currentCap * 1.15);
+  const nextLevelCap = Math.round(2000 * Math.pow(1.8, currentLevel)); // cap at level+1
+  return Math.round(nextLevelCap * 0.60);
 }
 
+// Silo upgrade cost = 60% of what the next silo level adds
 function siloUpgradeCost(currentLevel) {
-  const currentCap = (200 * G.castleLevel) + Math.round(500 * Math.pow(1.5, currentLevel - 1));
-  return Math.round(currentCap * 1.15);
+  const nextLevelCap = Math.round(800 * Math.pow(1.6, currentLevel)); // cap at level+1
+  return Math.round(nextLevelCap * 0.60);
 }
 
 // ═══════════════ TICK ═══════════════
 function tick(){
   const now=Date.now(), dt=(now-G.lastTick)/1000;
   G.lastTick=now;
-
-  const J_REGEN_MS = 180000; // 3 mins
-  const maxJ = 50 + (G.artifacts.suit * 2);
-  if (G.juice < maxJ) {
-      const passed = now - G.lastJuiceTick;
-      if (passed >= J_REGEN_MS) {
-          const add = Math.floor(passed / J_REGEN_MS);
-          G.juice = Math.min(maxJ, G.juice + add);
-          G.lastJuiceTick = now - (passed % J_REGEN_MS);
-      }
-  } else {
-      G.lastJuiceTick = now;
-  }
 
   const maxGold = calcMaxGold();
   const maxFood = calcMaxFood();
@@ -1791,6 +1730,7 @@ function tick(){
   G.buildings.forEach(b=>{
     if(!b.type||b.constructionEnd)return;
     const d=BD[b.type];if(!d)return;
+    // Apply garrison production multipliers — checks both G.heroes (Kai Man) and G.decaySquad
     const garrisonedHeroId = G.garrison[b.slot];
     let gh = null;
     if (garrisonedHeroId) {
@@ -1798,23 +1738,27 @@ function tick(){
         || G.heroes.find(h => h.id === garrisonedHeroId && h.unlocked);
     }
     let pgMult = 1, pfMult = 1;
-    if (gh && gh.unlocked) {
-      if (gh.garrisonBuff === 'goldProd' && b.type === 'goldmine') pgMult += gh.garrisonMult;
-      if (gh.garrisonBuff === 'farmProd' && b.type === 'farm') pfMult += gh.garrisonMult;
-      if (gh.garrisonBuff === 'marketGold' && b.type === 'market') pgMult += gh.garrisonMult;
+    if (gh) {
+      if (gh.garrisonBuff === 'goldProd' && d.pg > 0) pgMult = 1 + gh.garrisonMult;
+      if (gh.garrisonBuff === 'farmProd' && d.pf > 0) pfMult = 1 + gh.garrisonMult;
+      if (gh.garrisonBuff === 'marketGold' && b.type === 'market') pgMult = 1 + gh.garrisonMult;
     }
     if (d.pg > 0 && G.gold < maxGold) G.gold += d.pg * b.level * pgMult * dt;
     if (d.pf > 0 && G.food < maxFood) G.food += d.pf * b.level * pfMult * dt;
+    // Shatter animation: show lost resource when at cap and producing
     if (d.pg > 0 && wasGoldFull) spawnLost('🪙', b);
     if (d.pf > 0 && wasFoodFull) spawnLost('🌾', b);
   });
 
+  // Notify once on hitting cap
   if (G.gold >= maxGold && !wasGoldFull) showToast('🏦 Vault full! Mines are wasting gold — upgrade or spend!');
   if (G.food >= maxFood && !wasFoodFull) showToast('🗄️ Silo full! Farms are wasting food — upgrade or train troops!');
 
+  // Hard clamp — no passive overflow allowed, only shop bonuses can exceed cap
   G.gold = Math.min(G.gold, maxGold);
   G.food = Math.min(G.food, maxFood);
 
+  // Expire overflow bonus
   if (G.overflowExpiry && now >= G.overflowExpiry) {
     G.overflowExpiry = null;
     G.overflowBonus = 0;
@@ -1823,22 +1767,20 @@ function tick(){
     showToast('Overflow bonus expired — back to normal storage capacity.');
   }
 
+  // Castle upgrade done?
   if(G.castleUpgrading&&now>=G.castleUpgrading){
     G.castleUpgrading=null; G.castleLevel++;
     const cb=G.buildings.find(b=>b.type==='castle');
     if(cb){cb.level=G.castleLevel;cb.constructionEnd=null;}
     showToast(`Your trash empire grows! Castle → Level ${G.castleLevel}! 🗑️✨`);spawnP('🏰',5);
   }
-  
+  // Troop training
   Object.entries(G.troops).forEach(([id,t])=>{
     const done=t.training.filter(tr=>now>=tr.finishAt);
     if(done.length){t.count+=done.length;t.training=t.training.filter(tr=>now<tr.finishAt);showToast(`${TD[id].e} ${TD[id].n} ×${done.length} ready!`);}
   });
-  
   checkAch();
-  updateUI();
-  renderBuildings();
-  if (document.getElementById('troop-msc')) renderTroopUIInPlace();
+  updateUI();renderBuildings();
   saveGame();
   setTimeout(tick,1000);
 }
@@ -1849,57 +1791,30 @@ function updateUI() {
   const maxFood = calcMaxFood();
   const goldFull = G.gold >= maxGold;
   const foodFull = G.food >= maxFood;
-  const goldOver = G.gold > maxGold;
+  const goldOver = G.gold > maxGold;  // overflow (bonus gold above cap)
   const foodOver = G.food > maxFood;
 
+  // Resource display: show current / max
   document.getElementById('gval').textContent = `${fmt(G.gold)} / ${fmt(maxGold)}`;
   document.getElementById('fval').textContent = `${fmt(G.food)} / ${fmt(maxFood)}`;
   document.getElementById('mval').textContent = fmt(G.gems);
-  
-  const altarGems = document.getElementById('altar-gems');
-  if (altarGems) altarGems.textContent = fmt(G.gems);
 
-  const hasUnclaimedAch = ACH.some(a => G.achieved.includes(a.id) && !G.achClaimed.includes(a.id));
-  const notif = document.getElementById('ach-notif');
-  if (notif) notif.style.display = hasUnclaimedAch ? 'block' : 'none';
-  
-  const maxJ = 50 + (G.artifacts.suit * 2);
-  document.getElementById('jval').textContent = `${Math.floor(G.juice)}/${maxJ}`;
-
-  const ochip = document.getElementById('ochip');
-  if (G.ooze > 0 || G.artifacts.dumpster > 0 || G.artifacts.rod > 0 || G.artifacts.suit > 0) {
-      ochip.style.display = 'flex';
-      document.getElementById('oval').textContent = G.ooze;
-  } else {
-      ochip.style.display = 'none';
-  }
-
+  // Gold chip: red when full, pulsing gold when overflowing above cap
   const gchip = document.getElementById('gchip');
   const gval  = document.getElementById('gval');
   gchip.classList.toggle('res-full', goldFull && !goldOver);
   gchip.classList.toggle('res-overflow', goldOver);
   gval.style.color = goldOver ? 'var(--gold)' : goldFull ? 'var(--red)' : '';
 
+  // Food chip: same logic
   const fchip = document.getElementById('fchip');
   const fval  = document.getElementById('fval');
   fchip.classList.toggle('res-full', foodFull && !foodOver);
   fchip.classList.toggle('res-overflow', foodOver);
   fval.style.color = foodOver ? 'var(--gold)' : foodFull ? 'var(--red)' : '';
 
+  // Castle badge
   document.getElementById('cbadge').textContent = `🏰 Lv${G.castleLevel} · ${cc(G.castleLevel).label}`;
-}
-
-function showJuiceInfo() {
-  const maxJ = 50 + (G.artifacts.suit * 2);
-  const nextJuice = Math.max(0, 180000 - (Date.now() - G.lastJuiceTick));
-  showModal(`
-      <span style="font-size:50px;display:block;text-align:center;margin:4px 0">🥤</span>
-      <div class="mt">Trash Juice</div>
-      <div class="msub">Fuel for your trash warriors</div>
-      <div class="sr"><span class="sl">Current</span><span class="sv">${Math.floor(G.juice)} / ${maxJ}</span></div>
-      ${G.juice < maxJ ? `<div class="sr"><span class="sl">Next Juice in</span><span class="sv">${fmtT(nextJuice)}</span></div>` : ''}
-      <div class="br"><button class="gb drk" onclick="closeModal()">Close</button></div>
-  `);
 }
 
 function fmt(n) {
@@ -1938,6 +1853,7 @@ function renderBuildings(){
     } else {
       const d=BD[b.type], isCas=b.type==='castle';
       if(isCas) s.classList.add('cas'); else s.classList.add('has');
+      // is it being built/upgraded?
       const conEnd=isCas?G.castleUpgrading:b.constructionEnd;
       const conDur=isCas?(b.constructionDuration||60000):b.constructionDuration;
       if(conEnd){
@@ -1972,16 +1888,15 @@ function showModal(html,center=false){
   document.body.appendChild(ov);AM=ov;
 }
 
-// ═══════════════ CASTLE & INCINERATOR ═══════════════
+// ═══════════════ CASTLE ═══════════════
 function openCastle(){
   const lvl=G.castleLevel, cfg=cc(lvl), maxed=lvl>=20;
+  // Fix: guard against calling cc(lvl+1) at max level
   const nxt = maxed ? cfg : cc(lvl+1);
-  const canUpg=!maxed && Number(G.gold)>=Math.floor(cfg.upgCost * getUpgCostMult()) && !G.castleUpgrading;
+  const canUpg=!maxed && Number(G.gold)>=cfg.upgCost && !G.castleUpgrading;
   const nextInfo=maxed?'All content unlocked!':`+${nxt.slots-cfg.slots} slots · New buildings`;
-  
-  const discountedCost = Math.floor(cfg.upgCost * getUpgCostMult());
-  const discountedTime = Math.floor(cfg.upgTime * getConTimeMult());
-  const costStr = maxed ? '' : discountedCost.toLocaleString();
+  // Fix: pre-compute cost string so it interpolates correctly inside HTML attributes
+  const costStr = maxed ? '' : cfg.upgCost.toLocaleString();
 
   let upgBtn = '';
   if (!maxed) {
@@ -1990,8 +1905,6 @@ function openCastle(){
     } else {
       upgBtn = `<button class="gb gld" onclick="showToast('Need 🪙${costStr} & no active upgrade!')" style="opacity:.45">⬆ Upgrade Castle</button>`;
     }
-  } else {
-    upgBtn = `<button class="gb" style="background:linear-gradient(135deg, #111, #3f0d16); color:#ff4444; border:1px solid #ff4444" onclick="confirmIncinerator()">🔥 The Great Incinerator</button>`;
   }
 
   showModal(`
@@ -2002,149 +1915,23 @@ function openCastle(){
       <div class="sr"><span class="sl">Building Slots</span><span class="sv">${cfg.slots} / 60</span></div>
       <div class="sr"><span class="sl">Max Building Level</span><span class="sv">${maxBLevel()}</span></div>
       ${!maxed?`
-      <div class="sr"><span class="sl">Upgrade Cost</span><span class="sv">🪙 ${discountedCost.toLocaleString()}</span></div>
-      <div class="sr"><span class="sl">Upgrade Time</span><span class="sv">⏱ ${fmtT(discountedTime*1000)}</span></div>
+      <div class="sr"><span class="sl">Upgrade Cost</span><span class="sv">🪙 ${cfg.upgCost.toLocaleString()}</span></div>
+      <div class="sr"><span class="sl">Upgrade Time</span><span class="sv">⏱ ${fmtT(cfg.upgTime*1000)}</span></div>
       <div class="sr"><span class="sl">Lv${lvl+1} Unlocks</span><span class="sv" style="color:var(--gem);font-size:11px">${nextInfo}</span></div>
       `:`<div class="sr"><span class="sl">Status</span><span class="sv" style="color:var(--gold)">MAX LEVEL ⭐</span></div>`}
     </div>
-    <div style="font-size:10px;color:var(--text-dim);text-align:center;margin-bottom:7px">Upgrading the Castle locks it down during construction.</div>
+    <div style="font-size:10px;color:var(--text-dim);text-align:center;margin-bottom:7px">Upgrading the Castle locks it down during construction. Plan your trash empire wisely!</div>
     <div class="br">
       <button class="gb drk" onclick="closeModal()">Close</button>
       ${upgBtn}
     </div>
   `);
 }
-
-function calcPrestigeOoze() {
-    let bLvlSum = G.buildings.reduce((sum, b) => sum + (b.level || 0), 0);
-    return 100 + Math.floor(bLvlSum * 2);
-}
-
-function confirmIncinerator() {
-    const ooze = calcPrestigeOoze();
-    showModal(`
-        <span style="font-size:50px;display:block;text-align:center;margin:4px 0">🔥</span>
-        <div class="mt" style="color:var(--red)">The Great Incinerator</div>
-        <div class="msub">Burn your empire to the ground and start anew.</div>
-        <div style="font-size:11px; color:var(--text-dim); text-align:center; margin-bottom:10px; background:#1a0808; padding:8px; border-radius:6px; border:1px solid #ff444455">
-            All Buildings, Resources, and Troops will be destroyed.<br>
-            <span style="color:var(--gem)">You will KEEP your Gems, Heroes, Shards, and Clan.</span>
-        </div>
-        <div class="sr"><span class="sl">Reward</span><span class="sv" style="color:#3de8a0">☣️ +${ooze} Toxic Ooze</span></div>
-        <div class="br">
-            <button class="gb drk" onclick="closeModal()">Cancel</button>
-            <button class="gb" style="background:var(--red); color:#fff" onclick="executePrestige(${ooze})">BURN IT ALL</button>
-        </div>
-    `);
-}
-
-function executePrestige(ooze) {
-    G.ooze += ooze;
-    G.castleLevel = 1;
-    G.gold = 350; G.food = 0;
-    
-    G.buildings = [
-        { slot: 0, type: 'castle',  level: 1, constructionEnd: null, constructionDuration: null },
-        { slot: 1, type: 'vault',   level: 1, constructionEnd: null, constructionDuration: null },
-        { slot: 2, type: 'silo',    level: 1, constructionEnd: null, constructionDuration: null },
-        ...Array.from({ length: 57 }, (_, i) => ({ slot: i + 3, type: null, constructionEnd: null, constructionDuration: null }))
-    ];
-    
-    Object.keys(G.troops).forEach(k => {
-        G.troops[k].count = 0; G.troops[k].training = [];
-    });
-    
-    saveGame();
-    closeModal();
-    updateUI(); renderBuildings();
-    
-    setTimeout(showSkyRoachOffer, 1000);
-}
-
-function showSkyRoachOffer() {
-    showModal(`
-        <span style="font-size:50px;display:block;text-align:center;margin:4px 0">🪳</span>
-        <div class="mt">Sky Roach Delivery</div>
-        <div class="msub">Skip the early grind!</div>
-        <div style="font-size:11px; color:var(--text-dim); text-align:center; margin-bottom:10px">
-            Veterans don't have time to punch trees. Have the Sky Roach air-drop a Level 5 Castle and heavy supplies directly to your landfill!
-        </div>
-        <div class="sr"><span class="sl">Instant Upgrade</span><span class="sv">🏰 Castle Lv 5</span></div>
-        <div class="sr"><span class="sl">Supply Drop</span><span class="sv">🪙 50,000 / 🌾 50,000</span></div>
-        <div class="br">
-            <button class="gb drk" onclick="closeModal()">Play Manually</button>
-            <button class="gb gem" onclick="buySkyRoach()">500 💎 Buy</button>
-        </div>
-    `, true);
-}
-
-function buySkyRoach() {
-    if (G.gems < 500) { showToast('Not enough Gems!'); return; }
-    G.gems -= 500;
-    G.castleLevel = 5;
-    G.buildings[0].level = 5;
-    
-    G.overflowExpiry = Math.max(G.overflowExpiry || 0, Date.now() + 172800000); 
-    G.overflowBonus = Math.max(G.overflowBonus || 0, 2.0); 
-    
-    G.gold += 50000;
-    G.food += 50000;
-    
-    saveGame(); closeModal(); updateUI(); renderBuildings();
-    showToast('Sky Roach Drop Complete! 🪳💥');
-}
-
-// ═══════════════ ARTIFACT SHOP ═══════════════
-function openArtifactShop() {
-    const costDumpster = Math.floor(20 * Math.pow(1.5, G.artifacts.dumpster));
-    const costRod = Math.floor(50 * Math.pow(1.5, G.artifacts.rod));
-    const costSuit = Math.floor(15 * Math.pow(1.5, G.artifacts.suit));
-    
-    showModal(`
-        <div class="mt" style="color:#3de8a0">☣️ Artifact Shop</div>
-        <div class="msub">Spend Toxic Ooze for permanent account multipliers.</div>
-        <div style="font-size:12px;text-align:center;color:#3de8a0;margin-bottom:10px;font-family:'Cinzel',serif;font-weight:bold">☣️ ${G.ooze} Ooze Available</div>
-        <div class="msc">
-            <div class="si" onclick="buyArtifact('dumpster', ${costDumpster})">
-                <span class="sii">🛢️</span>
-                <div><div class="sin">Golden Dumpster Lv${G.artifacts.dumpster}</div><div class="sid">+${(G.artifacts.dumpster+1)*10}% Global Storage Cap</div></div>
-                <span class="sip" style="background:#3f4a30;color:#3de8a0">☣️ ${costDumpster}</span>
-            </div>
-            <div class="si" onclick="buyArtifact('rod', ${costRod})">
-                <span class="sii">☢️</span>
-                <div><div class="sin">Plutonium Rod Lv${G.artifacts.rod}</div><div class="sid">+${G.artifacts.rod+1}% Legendary Pull Rate</div></div>
-                <span class="sip" style="background:#3f4a30;color:#3de8a0">☣️ ${costRod}</span>
-            </div>
-            <div class="si" onclick="buyArtifact('suit', ${costSuit})">
-                <span class="sii">🦺</span>
-                <div><div class="sin">Bio-Hazard Suit Lv${G.artifacts.suit}</div><div class="sid">+${(G.artifacts.suit+1)*2} Max Trash Juice</div></div>
-                <span class="sip" style="background:#3f4a30;color:#3de8a0">☣️ ${costSuit}</span>
-            </div>
-        </div>
-        <div class="br"><button class="gb drk" onclick="closeModal()">Close</button></div>
-    `);
-}
-
-function buyArtifact(type, cost) {
-    if (G.ooze < cost) { showToast('Not enough Toxic Ooze! Burn your Castle!'); return; }
-    G.ooze -= cost;
-    G.artifacts[type]++;
-    saveGame();
-    openArtifactShop();
-    updateUI();
-    showToast('Artifact Upgraded! ☣️✨');
-}
-
 function upgCastle(){
   const cfg=cc(G.castleLevel);
-  const costMult = getUpgCostMult();
-  const timeMult = getConTimeMult();
-  const discountedCost = Math.floor(cfg.upgCost * costMult);
-  const dur = Math.floor(cfg.upgTime * timeMult) * 1000;
-  
-  G.gold -= discountedCost;
-  G.castleUpgrading = Date.now() + dur;
-  
+  G.gold-=cfg.upgCost;
+  const dur=cfg.upgTime*1000;
+  G.castleUpgrading=Date.now()+dur;
   const cb=G.buildings.find(b=>b.type==='castle');
   if(cb){cb.constructionEnd=G.castleUpgrading;cb.constructionDuration=dur;}
   closeModal();showToast(`Expanding the trash empire to Lv${G.castleLevel+1}! ⚒️`);updateUI();renderBuildings();saveGame();
@@ -2175,75 +1962,60 @@ function cfin(cost){
 }
 
 // ═══════════════ BUILD MENU ═══════════════
+// ═══════════════ BUILD MENU ═══════════════
 function openBuildMenu(idx){
-  const costMult = getUpgCostMult();
-  const timeMult = getConTimeMult();
   const rows=Object.entries(BD).filter(([k])=>k!=='castle').map(([key,d])=>{
-    const ok=isAllowed(key);
-    const gc = Math.floor(d.gc * costMult);
-    const bt = Math.floor(d.bt * timeMult);
-    const afford=Number(G.gold)>=gc && Number(G.food)>=d.fc;
+    const ok=isAllowed(key), afford=Number(G.gold)>=d.gc && Number(G.food)>=d.fc;
     const cls=!ok?'nc':!afford?'ca':'';
+    
+    // Clean HTML click logic
     let clickAction = '';
     if (ok && afford) { clickAction = `startBuild(${idx}, '${key}')`; }
     else if (ok) { clickAction = `showToast('Need more resources!')`; }
     else { clickAction = `showToast('Upgrade Castle to Lv${d.cr}!')`; }
     
-    return`<div class="bop ${cls}" onclick="${clickAction}"><div class="boi">${d.e}</div><div class="bon">${d.n}</div><div class="boc">🪙${gc}${d.fc?` 🌾${d.fc}`:''}</div><div class="bot">⏱${fmtT(bt*1000)}</div>${!ok?`<div class="boreq">Castle Lv${d.cr}</div>`:''}</div>`;
+    return`<div class="bop ${cls}" onclick="${clickAction}"><div class="boi">${d.e}</div><div class="bon">${d.n}</div><div class="boc">🪙${d.gc}${d.fc?` 🌾${d.fc}`:''}</div><div class="bot">⏱${fmtT(d.bt*1000)}</div>${!ok?`<div class="boreq">Castle Lv${d.cr}</div>`:''}</div>`;
   }).join('');
   
   showModal(`<div class="mt">🏗️ Build</div><div class="msub">Castle Lv${G.castleLevel} · ${cc(G.castleLevel).label} — grayed = locked</div><div class="msc"><div class="bgrid">${rows}</div></div><div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal()">Cancel</button></div>`);
 }
         
 function startBuild(idx,type){
-  const d=BD[type]; 
-  const gc = Math.floor(d.gc * getUpgCostMult());
-  G.gold-=gc; G.food-=d.fc;
-  const dur=Math.floor(d.bt * getConTimeMult()) * 1000;
+  const d=BD[type]; G.gold-=d.gc; G.food-=d.fc;
+  const dur=d.bt*1000;
   const b=G.buildings[idx]; b.type=type;b.level=0;b.constructionEnd=Date.now()+dur;b.constructionDuration=dur;
   closeModal();showToast(`Building ${d.n}… ⚒️`);spawnP('🪙',2);updateUI();renderBuildings();saveGame();
 }
 
-// ═══════════════ BUILDING INFO & DEMOLISH ═══════════════
+// ═══════════════ BUILDING INFO ═══════════════
 function openBInfo(idx){
   const b=G.buildings[idx], d=BD[b.type];
   const ml=maxBLevel(), atMax=b.level>=ml;
 
-  const costMult = getUpgCostMult();
-  const timeMult = getConTimeMult();
+  // Vault/silo use special cost scaling; all others use exponential formula
   let uc, ut;
   if (b.type === 'vault') {
-    uc = Math.floor(vaultUpgradeCost(b.level) * costMult);
-    ut = Math.floor(d.bt * b.level * 1.5 * timeMult);
+    uc = vaultUpgradeCost(b.level);
+    ut = Math.floor(d.bt * b.level * 1.5);
   } else if (b.type === 'silo') {
-    uc = Math.floor(siloUpgradeCost(b.level) * costMult);
-    ut = Math.floor(d.bt * b.level * 1.5 * timeMult);
+    uc = siloUpgradeCost(b.level);
+    ut = Math.floor(d.bt * b.level * 1.5);
   } else {
-    uc = Math.floor(d.gc * 1.6 * b.level * costMult);
-    ut = Math.floor(d.bt * b.level * 1.5 * timeMult);
+    // FIXED: exponential mine/building upgrade cost — 300 * 1.5^(level-1)
+    // Old formula was linear (gc * 1.6 * level) which never scaled meaningfully.
+    // New formula: costs ~300g at Lv1, ~17k at Lv10, ~665k at Lv20 — meaningful at every tier.
+    uc = Math.round(300 * Math.pow(1.5, b.level - 1));
+    ut = Math.floor(d.bt * b.level * 1.5);
   }
 
   const canU = !atMax && Number(G.gold) >= uc;
-  
-  // Calculate local buffs for UI display
-  let pgMult = 1, pfMult = 1;
-  const garrisonedHeroId = G.garrison[idx];
-  if (garrisonedHeroId) {
-      const gh = G.decaySquad.find(h=>h.id===garrisonedHeroId) || G.heroes.find(h=>h.id===garrisonedHeroId);
-      if (gh && gh.unlocked) {
-          if (gh.garrisonBuff === 'goldProd' && b.type === 'goldmine') pgMult += gh.garrisonMult;
-          if (gh.garrisonBuff === 'farmProd' && b.type === 'farm') pfMult += gh.garrisonMult;
-          if (gh.garrisonBuff === 'marketGold' && b.type === 'market') pgMult += gh.garrisonMult;
-      }
-  }
-  const outG = (d.pg * b.level * pgMult).toFixed(1).replace('.0','');
-  const outF = (d.pf * b.level * pfMult).toFixed(1).replace('.0','');
-  const prod = d.pg>0 ? `+${outG}/s 🪙` : d.pf>0 ? `+${outF}/s 🌾` : 'Passive';
+  const prod = d.pg>0 ? `+${(d.pg*b.level).toFixed(0)}/s 🪙` : d.pf>0 ? `+${(d.pf*b.level).toFixed(0)}/s 🌾` : 'Passive';
 
+  // Storage-specific stat for vault/silo — updated to match new formulas
   let storageStat = '';
   if (b.type === 'vault' && b.level > 0) {
-    const thisCap = Math.round(1000 * Math.pow(1.5, b.level - 1));
-    const nextCap = atMax ? null : Math.round(1000 * Math.pow(1.5, b.level));
+    const thisCap = Math.round(2000 * Math.pow(1.8, b.level - 1));
+    const nextCap = atMax ? null : Math.round(2000 * Math.pow(1.8, b.level));
     const totalNow = calcMaxGold();
     storageStat = `
       <div class="sr"><span class="sl">Gold Capacity (this vault)</span><span class="sv" style="color:var(--gold)">+${thisCap.toLocaleString()}</span></div>
@@ -2251,8 +2023,8 @@ function openBInfo(idx){
       ${nextCap ? `<div class="sr"><span class="sl">Next Level Adds</span><span class="sv" style="color:var(--gem)">+${nextCap.toLocaleString()}</span></div>` : ''}`;
   }
   if (b.type === 'silo' && b.level > 0) {
-    const thisCap = Math.round(500 * Math.pow(1.5, b.level - 1));
-    const nextCap = atMax ? null : Math.round(500 * Math.pow(1.5, b.level));
+    const thisCap = Math.round(800 * Math.pow(1.6, b.level - 1));
+    const nextCap = atMax ? null : Math.round(800 * Math.pow(1.6, b.level));
     const totalNow = calcMaxFood();
     storageStat = `
       <div class="sr"><span class="sl">Food Capacity (this silo)</span><span class="sv" style="color:var(--green)">+${thisCap.toLocaleString()}</span></div>
@@ -2260,15 +2032,16 @@ function openBInfo(idx){
       ${nextCap ? `<div class="sr"><span class="sl">Next Level Adds</span><span class="sv" style="color:var(--gem)">+${nextCap.toLocaleString()}</span></div>` : ''}`;
   }
 
+  // Pinch-point hint for vault/silo when player can't afford
   const isPinch = (b.type==='vault'||b.type==='silo') && !canU && !atMax;
   const pinchHint = isPinch ? `<div style="font-size:10px;color:var(--orange);text-align:center;margin-top:6px;padding:6px;background:#1a1505;border-radius:6px;border:1px solid var(--orange)33">💡 Vault full = mines waste gold. Buy a <b style="color:var(--gold)">Vault Key</b> from the Shop to temporarily exceed your cap and upgrade!</div>` : '';
 
+  // Garrison panel — show on garrison-eligible buildings
   const garrisonEligible = ['goldmine','farm','barracks'].includes(b.type);
   let garrisonPanel = '';
   if (garrisonEligible) {
-    const garrisonHero = garrisonedHeroId
-      ? (G.decaySquad.find(h=>h.id===garrisonedHeroId) || G.heroes.find(h=>h.id===garrisonedHeroId))
-      : null;
+    const garrisonHeroId = G.garrison[idx] || null;
+    const garrisonHero = garrisonHeroId ? G.decaySquad.find(h=>h.id===garrisonHeroId) : null;
     garrisonPanel = `
       <div style="margin-top:10px;padding:9px;background:#0d1020;border:1px solid ${garrisonHero?'var(--purple)':'var(--border)'};border-radius:8px">
         <div style="font-family:'Cinzel',serif;font-size:10px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:6px">🛡️ GARRISON SLOT</div>
@@ -2307,53 +2080,21 @@ function openBInfo(idx){
       <button class="gb drk" onclick="closeModal()">Close</button>
       ${upgBtn}
     </div>
-    ${b.type !== 'castle' ? `<div class="br"><button class="gb" style="background:#5a1010; color:#ff4444; border:1px solid #ff4444" onclick="demolishB(${idx})">🧨 Demolish (5 💎)</button></div>` : ''}
   `);
 }
-
-function demolishB(idx) {
-    if (G.gems < 5) { showToast('Need 5 Gems to demolish!'); return; }
-    const b = G.buildings[idx];
-    if (b.type === 'castle') return;
-    showModal(`
-        <div class="mt" style="color:var(--red)">Demolish ${BD[b.type].n}?</div>
-        <div class="msub">This will instantly clear the slot and cost 5 Gems.</div>
-        <div class="br">
-            <button class="gb drk" onclick="closeModal(); openBInfo(${idx})">Cancel</button>
-            <button class="gb" style="background:var(--red);color:#fff" onclick="confirmDemolish(${idx})">🧨 Confirm</button>
-        </div>
-    `);
-}
-
-function confirmDemolish(idx) {
-    if (G.gems < 5) return;
-    G.gems -= 5;
-    const b = G.buildings[idx];
-    if (G.garrison[idx]) delete G.garrison[idx];
-    b.type = null;
-    b.level = 0;
-    b.constructionEnd = null;
-    closeModal();
-    showToast('Building demolished!');
-    updateUI();
-    renderBuildings();
-    saveGame();
-}
-
 function upgB(idx){
   const b=G.buildings[idx], d=BD[b.type];
-  const costMult = getUpgCostMult();
-  const timeMult = getConTimeMult();
   let cost, dur;
   if (b.type === 'vault') {
-    cost = Math.floor(vaultUpgradeCost(b.level) * costMult);
-    dur = Math.floor(d.bt * b.level * 1.5 * timeMult) * 1000;
+    cost = vaultUpgradeCost(b.level);
+    dur = Math.floor(d.bt * b.level * 1.5) * 1000;
   } else if (b.type === 'silo') {
-    cost = Math.floor(siloUpgradeCost(b.level) * costMult);
-    dur = Math.floor(d.bt * b.level * 1.5 * timeMult) * 1000;
+    cost = siloUpgradeCost(b.level);
+    dur = Math.floor(d.bt * b.level * 1.5) * 1000;
   } else {
-    cost = Math.floor(d.gc * 1.6 * b.level * costMult);
-    dur = Math.floor(d.bt * b.level * 1.5 * timeMult) * 1000;
+    // Matches new openBInfo formula: 300 * 1.5^(level-1)
+    cost = Math.round(300 * Math.pow(1.5, b.level - 1));
+    dur = Math.floor(d.bt * b.level * 1.5) * 1000;
   }
   G.gold -= cost; b.constructionEnd = Date.now() + dur; b.constructionDuration = dur;
   closeModal(); showToast(`Upgrading ${d.n} to Lv${b.level+1}…`); updateUI(); renderBuildings(); saveGame();
@@ -2387,278 +2128,113 @@ function finNow(idx,cost){
 function openTroops() {
   const brx = G.buildings.find(b => b.type === 'barracks' && !b.constructionEnd);
   let h = `<div class="mt">⚔️ Troop Training</div>`;
-  if (!brx) {
-    h += `<div class="msub" style="color:var(--orange)">Build a Barracks first — even trash lords need soldiers!</div>`;
-  } else {
+  if (!brx) { h += `<div class="msub" style="color:var(--orange)">Build a Barracks first — even trash lords need soldiers!</div>`; }
+  else {
     const brxLvl = brx.level;
-    const heroTrainMult = 1 - garrisonBuffMult('trainTime');
-    const speedMult = Math.pow(0.85, brxLvl - 1) * heroTrainMult;
-    h += `<div class="msub">Barracks Lv${brxLvl} — Recruit your army of trash warriors (+${Math.round((1 - speedMult)*100)}% speed boost)</div>`;
-    h += `<div class="msc" id="troop-msc"></div>`;
-  }
-  h += `<div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button><button class="gb gld" onclick="closeModal();setTab('b')">⚡ Battle!</button></div>`;
-  showModal(h);
-  
-  if (brx) {
-    renderTroopUIInPlace();
-  }
-}
-
-function renderTroopUIInPlace() {
-  const brx = G.buildings.find(b => b.type === 'barracks' && !b.constructionEnd);
-  const scrollArea = document.getElementById('troop-msc');
-  if (!scrollArea || !brx) return;
-
-  const brxLvl = brx.level;
-  const heroTrainMult = 1 - garrisonBuffMult('trainTime');
-  const speedMult = Math.pow(0.85, brxLvl - 1) * heroTrainMult;
-  
-  let newHtml = `<div class="tgrid">`;
-  Object.entries(TD).forEach(([id, d]) => {
-    const realTt = d.tt * speedMult;
-    const t = G.troops[id];
-    const unlk = G.castleLevel >= d.cr;
-    const afford = G.gold >= d.gc && G.food >= d.fc;
-    const now = Date.now();
-    const next = t.training.length > 0 ? fmtT(Math.max(0, t.training[0].finishAt - now)) : '';
-    const rawPct = t.training.length > 0 ? (1 - (t.training[0].finishAt - now) / (realTt * 1000)) * 100 : 0;
-    const pct = Math.max(0, Math.min(100, Math.round(rawPct)));
+    const speedMult = Math.pow(0.85, brxLvl - 1); // 15% faster per Barracks level
     
-    newHtml += `<div class="tc">
-      ${t.count > 0 ? `<span class="tcb">${t.count}</span>` : ''}
-      <span class="tce">${d.e}</span>
-      <div class="tcn">${d.n}</div>
-      <div class="tcs">❤️${d.hp} ⚔️${d.dmg}</div>
-      <div class="tcc">🪙${d.gc} 🌾${d.fc}</div>
-      ${!unlk ? `<div style="font-size:9px;color:var(--red);margin-top:3px">Castle Lv${d.cr}</div>` :
-        `<button class="ttr" onclick="trainTroop('${id}')" style="${afford ? '' : 'opacity:.5;cursor:not-allowed'}">${afford ? `+Train (${fmtT(realTt * 1000)})` : 'Need Resources'}</button>`}
-      ${t.training.length > 0 ? `<div class="tpb"><div class="tpf" style="width:${pct}%"></div></div><div style="font-size:8px;color:var(--blue);margin-top:2px">${t.training.length} training · ${next}</div>` : ''}
-    </div>`;
-  });
-  newHtml += `</div>`;
-  
-  const total = Object.values(G.troops).reduce((a, t) => a + t.count, 0);
-  newHtml += `<div style="margin-top:12px;font-family:'Cinzel',serif;font-size:12px;color:var(--text-dim);margin-bottom:6px">🗑️ Your Trash Army (${total} warriors)</div>`;
-  Object.entries(TD).forEach(([id, d]) => {
-    const t = G.troops[id];
-    if (t.count > 0) newHtml += `<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;margin-bottom:5px"><span style="font-size:24px">${d.e}</span><div style="flex:1"><div style="font-family:'Cinzel',serif;font-size:11px">${d.n} ×${t.count}</div><div style="font-size:10px;color:var(--blue)">⚔ Dmg:${d.dmg} ❤ HP:${d.hp}</div></div></div>`;
-  });
-  if (total === 0) newHtml += `<div style="text-align:center;color:var(--text-dim);font-size:12px;padding:8px">No warriors yet. Your trash kingdom is defenseless! 😬</div>`;
-  
-  scrollArea.innerHTML = newHtml;
+    h += `<div class="msub">Barracks Lv${brxLvl} — Recruit your army of trash warriors (+${Math.round((1 - speedMult)*100)}% speed boost)</div><div class="msc"><div class="tgrid">`;
+    Object.entries(TD).forEach(([id, d]) => {
+      const realTt = d.tt * speedMult; // Apply speed boost to UI
+      const t=G.troops[id], unlk=G.castleLevel>=d.cr;
+      const afford=G.gold>=d.gc&&G.food>=d.fc;
+      const now=Date.now();
+      const next=t.training.length>0?fmtT(Math.max(0,t.training[0].finishAt-now)):'';
+      const pct=t.training.length>0?Math.round((1-(t.training[0].finishAt-now)/(d.tt*1000))*100):0;
+      h+=`<div class="tc">
+        ${t.count>0?`<span class="tcb">${t.count}</span>`:''}
+        <span class="tce">${d.e}</span>
+        <div class="tcn">${d.n}</div>
+        <div class="tcs">❤️${d.hp} ⚔️${d.dmg}</div>
+        <div class="tcc">🪙${d.gc} 🌾${d.fc}</div>
+        ${!unlk?`<div style="font-size:9px;color:var(--red);margin-top:3px">Castle Lv${d.cr}</div>`:
+          `<button class="ttr" onclick="trainTroop('${id}')" ${afford?'':''} style="${afford?'':'opacity:.5;cursor:not-allowed'}">${afford?`+Train (${fmtT(realTt * 1000)})`:'Need Resources'}</button>`}
+        ${t.training.length>0?`<div class="tpb"><div class="tpf" style="width:${pct}%"></div></div><div style="font-size:8px;color:var(--blue);margin-top:2px">${t.training.length} training · ${next}</div>`:''}
+      </div>`;
+    });
+    h+=`</div>`;
+    // army summary
+    const total=Object.values(G.troops).reduce((a,t)=>a+t.count,0);
+    h+=`<div style="margin-top:12px;font-family:'Cinzel',serif;font-size:12px;color:var(--text-dim);margin-bottom:6px">🗑️ Your Trash Army (${total} warriors)</div>`;
+    Object.entries(TD).forEach(([id,d])=>{
+      const t=G.troops[id];
+      if(t.count>0) h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:7px;margin-bottom:5px"><span style="font-size:24px">${d.e}</span><div style="flex:1"><div style="font-family:'Cinzel',serif;font-size:11px">${d.n} ×${t.count}</div><div style="font-size:10px;color:var(--blue)">⚔ Dmg:${d.dmg} ❤ HP:${d.hp}</div></div></div>`;
+    });
+    if(total===0) h+=`<div style="text-align:center;color:var(--text-dim);font-size:12px;padding:8px">No warriors yet. Your trash kingdom is defenseless! 😬</div>`;
+    h+=`</div>`;
+  }
+  h+=`<div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button><button class="gb gld" onclick="closeModal();setTab('b')">⚡ Battle!</button></div>`;
+  showModal(h);
 }
-
 function trainTroop(id) {
   const d = TD[id];
-  const t = G.troops[id];
-  
-  if (G.gold < d.gc || G.food < d.fc) { 
-    showToast('Insufficient resources for recruitment!'); 
-    return; 
-  }
+  if (G.gold < d.gc || G.food < d.fc) { showToast('Not enough resources!'); return; }
   
   const brx = G.buildings.find(b => b.type === 'barracks');
-  const heroTrainMult = 1 - garrisonBuffMult('trainTime');
-  const speedMult = (brx ? Math.pow(0.85, brx.level - 1) : 1) * heroTrainMult;
+  const speedMult = brx ? Math.pow(0.85, brx.level - 1) : 1;
   const realTt = d.tt * speedMult;
 
-  G.gold -= d.gc; 
-  G.food -= d.fc;
-  t.training.push({ finishAt: Date.now() + (realTt * 1000) });
-
-  updateUI();
-  renderTroopUIInPlace();
-  showToast(`Recruiting ${d.e} ${d.n}...`);
-  saveGame();
+  G.gold -= d.gc; G.food -= d.fc;
+  G.troops[id].training.push({ finishAt: Date.now() + realTt * 1000 });
+  showToast(`Training ${d.e} ${d.n}…`); updateUI(); closeModal(); openTroops();
 }
 
 // ═══════════════ HEROES ═══════════════
 function openHeroes(){
-  const kai = G.heroes[0];
-  const pct = Math.round(kai.xp / kai.xpNeeded * 100);
-  const power = 110 + (kai.level * 20);
-
-  const kaiSlot = heroGarrisonSlot('kaiman');
-  const kaiGarrisonBuilding = kaiSlot !== null ? G.buildings[kaiSlot] : null;
-  const kaiGarrisonLabel = kaiGarrisonBuilding
-    ? `⚔ Garrisoned at ${BD[kaiGarrisonBuilding.type]?.n || 'Building'}`
-    : '🏕 Not garrisoned';
-
-  const assembled = G.decaySquad.filter(h => h.unlocked);
-
-  const decayTeaser = `
-    <div style="margin-top:10px;padding:10px;background:linear-gradient(135deg,#1a0828,#0d0818);border:1px solid #6c2fa055;border-radius:9px;cursor:pointer" onclick="closeModal();setTab('a')">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--purple)">🔮 Decay Squad</div>
-        <div style="font-size:10px;color:var(--gem)">${assembled.length}/10 assembled →</div>
-      </div>
-      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px">${G.decaySquad.slice(0,8).map(h=>`<span style="font-size:18px;${h.unlocked?'':'filter:grayscale(1);opacity:.35'}">${h.emoji}</span>`).join('')}</div>
-      <div style="font-size:10px;color:var(--orange)">⚠ Kai Man's single-target stun won't cut it at Cleanington.</div>
-      <div style="font-size:10px;color:var(--text-dim);margin-top:2px">Pull at the Altar for AOE heroes like Lady Lint & King Compost</div>
-    </div>`;
-
-  showModal(`
-    <div class="mt">🌟 Heroes</div>
-    <div class="msub">Your champions of the trash empire</div>
-    <div class="msc">
-      <div style="background:linear-gradient(145deg,#1e2d45,#151e30);border:1px solid var(--border-bright);border-radius:11px;padding:12px;text-align:center;cursor:pointer;position:relative" onclick="openHD(0)">
-        <span style="position:absolute;top:6px;right:8px;background:var(--purple);color:#fff;font-family:'Cinzel',serif;font-size:8px;font-weight:700;padding:2px 6px;border-radius:6px">Lv${kai.level}</span>
-        <span style="font-size:52px;display:block;margin:4px 0;filter:drop-shadow(0 0 10px #9b59b655)">${kai.emoji}</span>
-        <div style="font-family:'Cinzel',serif;font-size:14px;font-weight:700">${kai.name}</div>
-        <div style="font-size:10px;color:var(--purple);margin-top:2px">${kai.ability}</div>
-        <div style="font-size:10px;color:var(--gold);margin-top:2px">⚔ ${power} Power</div>
-        <div style="font-size:9px;color:var(--gem);margin-top:1px">${kai.garrisonDesc}</div>
-        <div style="height:5px;background:#ffffff13;border-radius:3px;margin:8px 0 4px">
-          <div style="height:100%;width:${pct}%;background:var(--purple);border-radius:3px;transition:width .5s"></div>
-        </div>
-        <div style="font-size:9px;color:var(--text-dim)">${kai.xp} / ${kai.xpNeeded} XP · ${kaiGarrisonLabel}</div>
-      </div>
-      ${decayTeaser}
-    </div>
-    <div class="br" style="margin-top:10px">
-      <button class="gb drk" onclick="closeModal()">Close</button>
-      <button class="gb pur" onclick="closeModal();setTab('a')">🔮 Pull More Heroes</button>
-    </div>
-  `);
-}
-
-function openHD(i){
-  const h = G.heroes[i];
-  const power = 110 + (h.level * 20);
-  const nextPower = 110 + ((h.level + 1) * 20);
-  const pct = Math.round(h.xp / h.xpNeeded * 100);
-  const isLv5Plus = h.level >= 5;
-
-  const isKaiMan = h.id === 'kaiman';
-  const upgradeCost = isKaiMan ? (h.level * 500) : (h.level * 80);
-  const currencyIcon = isKaiMan ? '🌾' : '💎';
-  const trainBtnText = isKaiMan ? `⚔ Train (50🌾)` : `⚔ Train (+15 XP)`;
-  
-  const hasResources = isKaiMan ? (G.food >= upgradeCost) : (G.gems >= upgradeCost);
-  const canU = hasResources && h.xp >= h.xpNeeded;
-
-  const kaiSlot = heroGarrisonSlot(h.id);
-  const garrisonStatus = kaiSlot !== null
-    ? `<div style="font-size:10px;color:var(--gem);margin-top:3px">⚔ Garrisoned · ${h.garrisonDesc}</div>`
-    : `<div style="font-size:10px;color:var(--text-dim);margin-top:3px">Not garrisoned — assign to a Gold Mine for +10% output</div>`;
-
-  const scalingWarn = isLv5Plus
-    ? `<div style="margin-top:7px;padding:7px 9px;background:#1a1000;border:1px solid var(--orange)44;border-radius:7px;font-size:10px;color:var(--orange)">⚠ Kai Man's scaling slows after Lv5. Rare & Legendary heroes from the Altar are now mathematically superior.</div>`
-    : '';
-
-  showModal(`
-    <span style="font-size:60px;display:block;text-align:center;margin:4px 0;filter:drop-shadow(0 0 16px #9b59b677)">${h.emoji}</span>
-    <div class="mt">${h.name}</div>
-    <div class="msub">Level ${h.level} · ${h.ability}</div>
-    <div style="margin:8px 0">
-      <div class="sr"><span class="sl">Power</span><span class="sv">${power} → ${nextPower}</span></div>
-      <div class="sr"><span class="sl">XP Progress</span><span class="sv">${h.xp} / ${h.xpNeeded}</span></div>
-      <div class="sr"><span class="sl">Level Up Cost</span><span class="sv">${upgradeCost} ${currencyIcon}</span></div>
-    </div>
-    <div style="height:6px;background:#ffffff11;border-radius:3px;margin-bottom:5px">
-      <div style="height:100%;width:${pct}%;background:var(--purple);border-radius:3px;transition:width .5s"></div>
-    </div>
-    ${garrisonStatus}
-    ${scalingWarn}
-    <div class="br" style="margin-top:10px">
-      <button class="gb drk" onclick="closeModal();openHeroes()">Back</button>
-      <button class="gb ${isKaiMan ? 'grn' : 'gem'}" onclick="${canU ? `upgH(${i})` : `showToast('Need XP & ${isKaiMan ? 'Food' : 'Gems'}!')`}" style="${canU ? '' : 'opacity:.45'}">⬆ Level Up</button>
-    </div>
-    <div style="display:flex;gap:7px;margin-top:7px">
-      <button class="gb pur" style="flex:1" onclick="earnXP(${i})">${trainBtnText}</button>
-      <button class="gb drk" style="flex:1" onclick="closeModal();openGarrisonPicker_hero('${h.id}')">🏕 Garrison</button>
-    </div>
-  `, true);
-}
-
-function upgH(i){
-  const h = G.heroes[i];
-  const isKaiMan = h.id === 'kaiman';
-  const cost = isKaiMan ? (h.level * 500) : (h.level * 80);
-
-  if (h.xp < h.xpNeeded) {
-      showToast('Need max XP to level up!');
-      return;
-  }
-
-  if (isKaiMan) {
-    if (G.food < cost) { showToast('Insufficient Food!'); return; }
-    G.food -= cost;
-  } else {
-    if (G.gems < cost) { showToast('Insufficient Gems!'); return; }
-    G.gems -= cost;
-  }
-
-  h.level++;
-  h.xp = 0;
-  h.xpNeeded = h.level <= 5
-    ? Math.floor(h.xpNeeded * 1.5)
-    : Math.floor(h.xpNeeded * 2.0);
-
-  closeModal();
-  updateUI();
-  saveGame();
-  
-  showToast(`${h.emoji} ${h.name} → Level ${h.level}! ⚔ ${110 + h.level * 20} Power`);
-  spawnP(isKaiMan ? '🌾' : '🌟', 5);
-}
-
-function earnXP(i){
-  const h = G.heroes[i];
-  if (h.xp >= h.xpNeeded) {
-      showToast('Max XP reached! Level up now!');
-      return;
-  }
-  
-  const trainCost = h.id === 'kaiman' ? 50 : 0;
-  if (h.id === 'kaiman') {
-      if (G.food < trainCost) {
-          showToast(`Need ${trainCost} Food to train!`);
-          return;
-      }
-      G.food -= trainCost;
-  }
-  
-  h.xp = Math.min(h.xpNeeded, h.xp + 15);
-  closeModal();
-  openHD(i);
-  showToast('+15 XP! Keep training!');
-  updateUI();
-  saveGame();
-}
-
-function openGarrisonPicker_hero(heroId) {
-  const eligible = G.buildings.filter(b => b.type && ['goldmine','farm','barracks'].includes(b.type) && !b.constructionEnd);
-  const h = G.heroes.find(x => x.id === heroId) || G.decaySquad.find(x => x.id === heroId);
-  if (!h) return;
-  if (eligible.length === 0) { showToast('Build a Gold Mine, Farm, or Barracks first!'); return; }
-
-  const currentSlot = heroGarrisonSlot(heroId);
-  const rows = eligible.map(b => {
-    const isActive = String(currentSlot) === String(b.slot);
-    const d = BD[b.type];
-    return `<div class="garrison-pick ${isActive ? 'active-garrison' : ''}" onclick="assignGarrison(${b.slot},'${heroId}');closeModal();showToast('${h.name} garrisoned! ${h.garrisonDesc}')">
-      <span class="garrison-pick-emoji">${d.e}</span>
-      <div><div class="garrison-pick-name">${d.n} Lv${b.level}</div><div class="garrison-pick-buff">${h.garrisonDesc}</div></div>
-      <div class="garrison-pick-status">${isActive ? '✅ HERE' : 'Assign'}</div>
-    </div>`;
+  const cards=G.heroes.map((h,i)=>{
+    const pct=Math.round(h.xp/h.xpNeeded*100);
+    return h.unlocked?
+      `<div class="hc" onclick="openHD(${i})"><span class="hcb">Lv${h.level}</span><span class="hci">${h.emoji}</span><div class="hcn">${h.name}</div><div class="hcl">⚔ ${h.power+h.level*20} pw</div><div style="font-size:8px;color:var(--text-dim)">${h.ability}</div><div class="xpb"><div class="xpf" style="width:${pct}%"></div></div><div style="font-size:8px;color:var(--text-dim);margin-top:2px">${h.xp}/${h.xpNeeded} XP</div></div>`:
+      `<div class="hc lkd" onclick="openHU(${i})"><span class="hci">${h.emoji}</span><div class="hcn">${h.name}</div><div style="font-size:9px;color:var(--gem);margin-top:3px">🔒 ${300+i*200} 💎</div><div style="font-size:8px;color:var(--text-dim)">${h.ability}</div></div>`;
   }).join('');
 
-  const clearBtn = currentSlot !== null
-    ? `<button class="gb drk" style="margin-top:6px;width:100%" onclick="removeGarrison(${currentSlot});closeModal();showToast('${h.name} unassigned.')">🚪 Remove from Garrison</button>`
-    : '';
+  const assembled = G.decaySquad.filter(h=>h.unlocked).length;
+  const decayTeaser = `
+    <div style="margin-top:12px;padding:10px;background:linear-gradient(135deg,#1a0828,#0d0818);border:1px solid #6c2fa055;border-radius:9px;cursor:pointer" onclick="closeModal();setTab('a')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--purple)">🔮 Decay Squad</div>
+        <div style="font-size:10px;color:var(--gem)">${assembled}/10 assembled →</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px">${G.decaySquad.slice(0,8).map(h=>`<span style="font-size:18px;${h.unlocked?'':'filter:grayscale(1);opacity:.35'}">${h.emoji}</span>`).join('')}</div>
+      <div style="font-size:10px;color:var(--text-dim)">Summon at the Altar · Garrison for production buffs</div>
+    </div>`;
 
-  showModal(`
-    <span style="font-size:40px;display:block;text-align:center;margin:4px 0">${h.emoji}</span>
-    <div class="mt">Garrison ${h.name}</div>
-    <div class="msub">${h.garrisonDesc}</div>
-    <div class="msc">${rows}${clearBtn}</div>
-    <div class="br" style="margin-top:8px"><button class="gb drk" onclick="closeModal();openHeroes()">Cancel</button></div>
-  `);
+  showModal(`<div class="mt">🌟 Heroes</div><div class="msub">The legendary champions of trash</div><div class="msc"><div class="hgrid">${cards}</div>${decayTeaser}</div><div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Close</button><button class="gb pur" onclick="closeModal();setTab('a')">🔮 Altar</button></div>`);
 }
-
-function openHU(i){ openHeroes(); }
-function unlkH(i,cost){ openHeroes(); }
+function openHD(i){
+  const h=G.heroes[i]; const uc=h.level*80; const pct=Math.round(h.xp/h.xpNeeded*100);
+  const canU=G.gems>=uc&&h.xp>=h.xpNeeded;
+  showModal(`
+    <span style="font-size:52px;display:block;text-align:center;margin:4px 0">${h.emoji}</span>
+    <div class="mt">${h.name}</div><div class="msub">Level ${h.level} · ${h.ability}</div>
+    <div style="margin:8px 0">
+      <div class="sr"><span class="sl">Power</span><span class="sv">${h.power+h.level*20}</span></div>
+      <div class="sr"><span class="sl">XP</span><span class="sv">${h.xp} / ${h.xpNeeded}</span></div>
+      <div class="sr"><span class="sl">Upgrade</span><span class="sv">${uc} 💎</span></div>
+    </div>
+    <div style="height:5px;background:#ffffff11;border-radius:3px;margin-bottom:10px"><div style="height:100%;width:${pct}%;background:var(--purple);border-radius:3px"></div></div>
+    <div class="br">
+      <button class="gb drk" onclick="closeModal();openHeroes()">Back</button>
+      <button class="gb gem" onclick="${canU?`upgH(${i})`:'showToast(\"Fill XP first!\")'}" style="${canU?'':'opacity:.45'}">⬆ Level Up</button>
+    </div>
+    <button class="gb pur" style="margin-top:7px;width:100%" onclick="earnXP(${i})">⚔ Train (+15 XP)</button>
+  `,true);
+}
+function upgH(i){
+  const h=G.heroes[i]; G.gems-=h.level*80;
+  h.level++;h.xp=0;h.xpNeeded=Math.floor(h.xpNeeded*1.5);
+  closeModal();showToast(`${h.name} → Level ${h.level}! 🌟`);spawnP('🌟',5);updateUI();saveGame();
+}
+function earnXP(i){G.heroes[i].xp=Math.min(G.heroes[i].xpNeeded,G.heroes[i].xp+15);closeModal();openHD(i);showToast('+15 XP!');}
+function openHU(i){
+  const h=G.heroes[i]; const cost=300+i*200;
+  showModal(`<span style="font-size:52px;display:block;text-align:center;margin:4px 0">${h.emoji}</span><div class="mt">${h.name}</div><div class="msub">${h.ability}</div><div class="sr" style="margin:8px 0"><span class="sl">Base Power</span><span class="sv">${h.power}</span></div><div class="br" style="margin-top:10px"><button class="gb drk" onclick="closeModal()">Cancel</button><button class="gb gem" onclick="unlkH(${i},${cost})">🔓 Unlock · ${cost} 💎</button></div>`,true);
+}
+function unlkH(i,cost){
+  if(G.gems<cost){showToast('Not enough gems!');return;}
+  G.gems-=cost;G.heroes[i].unlocked=true;G.heroes[i].level=1;
+  closeModal();showToast(`${G.heroes[i].name} joins your trash army! 🎉`);spawnP('⚔️',4);updateUI();saveGame();
+}
 
 // ═══════════════ CLAN ═══════════════
 function openClan(){
@@ -2738,35 +2314,7 @@ function openBSearch(){
   showModal(`<div class="mt">⚡ Find Battle</div><div class="msub">Raid a clean village — show them what trash can do! ⚔️ ${power} power · ${total} troops</div>${opts}<div class="br"><button class="gb drk" onclick="closeModal()">Cancel</button></div>`);
 }
 
-function refillJuice(retryStageIndex) {
-    if (G.gems < 25) { showToast('Not enough Gems!'); return; }
-    G.gems -= 25;
-    G.juice += 50;
-    saveGame(); updateUI(); closeModal();
-    showToast('🥤 Juice Refilled!');
-    openBSearch();
-}
-
 function startBattle(ei){
-  if (G.juice < 10) {
-      showModal(`
-          <span style="font-size:50px;display:block;text-align:center;margin:4px 0">🥤</span>
-          <div class="mt" style="color:var(--orange)">Out of Trash Juice!</div>
-          <div class="msub">Your trash warriors need hydration (10 Juice required to deploy). Regenerates over time.</div>
-          <div class="si" onclick="refillJuice(${ei})">
-              <span class="sii">🔋</span>
-              <div><div class="sin">Premium Refill</div><div class="sid">Instantly restore 50 Juice</div></div>
-              <span class="sip">25 💎</span>
-          </div>
-          <div class="br"><button class="gb drk" onclick="openBSearch()">Cancel</button></div>
-      `);
-      return;
-  }
-  
-  G.juice -= 10;
-  updateUI();
-  saveGame();
-
   closeModal();
   const enemies=[{n:'Tidyville',loot:180},{n:'Cleanington',loot:320},{n:'The Sanitarium',loot:580}];
   const layout=ELAYOUTS[ei].map(b=>({...b}));
@@ -2795,6 +2343,7 @@ function renderBattle(){
     el.innerHTML=`${b.e}<div class="ehp"><div class="ehf" style="width:${Math.round(b.hp/b.mhp*100)}%"></div></div>`;
     field.appendChild(el);
   });
+  // deploy buttons
   const row=document.getElementById('drow'); row.innerHTML='';
   Object.entries(TD).forEach(([id,d])=>{
     const cnt=BS.troops[id]||0;
@@ -2827,6 +2376,7 @@ function deployTroop(ev){
   const px=(ev.clientX-rect.left)/rect.width*100;
   const py=(ev.clientY-rect.top)/rect.height*100;
 
+  // find nearest alive building
   let best=-1, bestD=Infinity;
   BS.buildings.forEach((b,i)=>{if(b.hp<=0)return;const d=(b.x-px)**2+(b.y-py)**2;if(d<bestD){bestD=d;best=i;}});
   if(best===-1){checkWin();return;}
@@ -2835,11 +2385,13 @@ function deployTroop(ev){
   const dmg=d.dmg+Math.floor(Math.random()*10);
   tgt.hp=Math.max(0,tgt.hp-dmg);
 
+  // damage float
   const fx=rect.left+tgt.x/100*rect.width, fy=rect.top+tgt.y/100*rect.height;
   const fl=document.createElement('div'); fl.className='dmgf'; fl.textContent=`-${dmg}`;
   fl.style.left=fx+'px'; fl.style.top=fy+'px';
   document.body.appendChild(fl); setTimeout(()=>fl.remove(),900);
 
+  // update building el
   const bEl=document.getElementById(`eb${best}`);
   if(bEl){
     if(tgt.hp<=0){
@@ -2886,6 +2438,7 @@ function endBattle(won=false){
 // ═══════════════ SUMMONING ALTAR ═══════════════
 const PULL_COSTS = { single: 50, ten: 450 };
 
+// Weighted pool for pulls
 const PULL_POOL = {
   common: ['scrappy','cardboard'],
   rare:   ['mary','sludge','alchemist','rottop'],
@@ -2893,9 +2446,8 @@ const PULL_POOL = {
 };
 
 function rollRarity() {
-  const legendChance = 5 + (G.artifacts.rod || 0);
   const r = Math.random() * 100;
-  if (r < legendChance)  return 'legend';
+  if (r < 5)  return 'legend';
   if (r < 30) return 'rare';
   return 'common';
 }
@@ -2905,6 +2457,7 @@ function rollPull() {
   const pool = PULL_POOL[rarity];
   const heroId = pool[Math.floor(Math.random() * pool.length)];
   const hero = G.decaySquad.find(h => h.id === heroId);
+  // Shard count by rarity
   const shardCounts = { common: [5,10], rare: [3,8], legend: [1,3] };
   const [min, max] = shardCounts[rarity];
   const shards = min + Math.floor(Math.random() * (max - min + 1));
@@ -2916,11 +2469,11 @@ function doPull(count) {
   if (G.gems < cost) { showToast('Not enough gems! Visit Shop 💎'); return; }
   G.gems -= cost;
   bump('mchip');
-  updateUI();
 
   const results = [];
   for (let i = 0; i < count; i++) results.push(rollPull());
 
+  // Apply shards
   let newAssemblies = [];
   results.forEach(r => {
     if (!r.hero) return;
@@ -2941,6 +2494,7 @@ function showPullAnimation(results, newAssemblies) {
   const fireEl = document.getElementById('pull-fire-emoji');
   const labelEl = document.getElementById('pull-label');
 
+  // Stage 1: fire animation
   overlay.classList.add('act');
   fireEl.textContent = '🔥';
   labelEl.textContent = 'Channeling the Dumpster…';
@@ -2952,7 +2506,9 @@ function showPullAnimation(results, newAssemblies) {
 
   setTimeout(() => {
     overlay.classList.remove('act');
+    // Show results in altar body
     renderAltarResults(results, newAssemblies);
+    // Feedback
     const hasLegend = results.some(r => r.rarity === 'legend');
     const hasRare = results.some(r => r.rarity === 'rare');
     if (hasLegend) { spawnP('✨', 8); showToast('LEGENDARY SHARDS! 🌟 The trash gods smile!'); }
@@ -3004,6 +2560,7 @@ function renderAltarMain() {
   const body = document.getElementById('altar-body');
   document.getElementById('altar-gems').textContent = fmt(G.gems);
 
+  // Rarity sort order
   const rarityOrder = {common:0,rare:1,legend:2};
   const sorted = [...G.decaySquad].sort((a,b)=>rarityOrder[a.rarity]-rarityOrder[b.rarity]);
 
@@ -3036,13 +2593,13 @@ function renderAltarMain() {
     </div>`;
   }).join('');
 
-  const legendChance = 5 + (G.artifacts.rod || 0);
+  // Odds table
   const oddsHtml = `<div style="background:#0a0618;border:1px solid #3a1060;border-radius:8px;padding:9px;margin-bottom:12px">
     <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--text-dim);letter-spacing:.5px;margin-bottom:6px">📊 PULL RATES</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center">
-      <div style="font-size:9px"><div style="color:#8ab0c0;font-family:'Cinzel',serif;font-weight:700">COMMON</div><div style="color:var(--text-dim)">${100 - 30 - legendChance}%</div><div style="color:#8ab0c0;font-size:8px">5–10 shards</div></div>
-      <div style="font-size:9px"><div style="color:#5aacff;font-family:'Cinzel',serif;font-weight:700">RARE</div><div style="color:var(--text-dim)">30%</div><div style="color:#5aacff;font-size:8px">3–8 shards</div></div>
-      <div style="font-size:9px"><div style="color:var(--gold);font-family:'Cinzel',serif;font-weight:700">LEGEND</div><div style="color:var(--text-dim)">${legendChance}%</div><div style="color:var(--gold);font-size:8px">1–3 shards</div></div>
+      <div style="font-size:9px"><div style="color:#8ab0c0;font-family:'Cinzel',serif;font-weight:700">COMMON</div><div style="color:var(--text-dim)">70%</div><div style="color:#8ab0c0;font-size:8px">5–10 shards</div></div>
+      <div style="font-size:9px"><div style="color:#5aacff;font-family:'Cinzel',serif;font-weight:700">RARE</div><div style="color:var(--text-dim)">25%</div><div style="color:#5aacff;font-size:8px">3–8 shards</div></div>
+      <div style="font-size:9px"><div style="color:var(--gold);font-family:'Cinzel',serif;font-weight:700">LEGEND</div><div style="color:var(--text-dim)">5%</div><div style="color:var(--gold);font-size:8px">1–3 shards</div></div>
     </div>
   </div>`;
 
@@ -3068,7 +2625,7 @@ function assembleHero(id) {
   if (!h || h.unlocked || h.shards < h.shardsNeeded) return;
   h.unlocked = true;
   h.level = 1;
-  h.shards = h.shardsNeeded;
+  h.shards = h.shardsNeeded; // cap at needed (don't overflow display)
   saveGame();
   spawnP(h.emoji, 7);
   showToast(`${h.emoji} ${h.name} assembled! Assign to a building for buffs!`);
@@ -3150,7 +2707,7 @@ function buyItem(id){
     if(G.gems<it.cost){showToast('Not enough gems!');return;}
     if(G.overflowExpiry && Date.now()<G.overflowExpiry){showToast('Golden Bucket already active!');return;}
     G.gems-=it.cost;
-    G.overflowExpiry = Date.now() + 86400000;
+    G.overflowExpiry = Date.now() + 86400000; // 24 hours
     showToast('🪣 Golden Bucket active! +50% storage for 24h');bump('mchip');spawnP('🪙',5);updateUI();closeModal();saveGame();return;
   }
   G.gems+=it.gems;showToast(`+${it.gems} Gems! 💎`);bump('mchip');spawnP('💎',4);updateUI();closeModal();saveGame();
@@ -3165,6 +2722,7 @@ function setTab(tab){
   else if(tab==='a')openAltar();
   else if(tab==='c')openClan();
   else if(tab==='b')openBSearch();
+  // close altar if navigating away
   if(tab!=='a') document.getElementById('altar-screen').classList.remove('act');
 }
 
@@ -3183,6 +2741,7 @@ function spawnP(em,n){
   },i*75);
 }
 
+// Shatter animation: resource icon floats up, grays out, shows LOST — only fires ~every 4s per building
 const _lostThrottle = {};
 function spawnLost(em, building) {
   const key = `${building.slot}`;
@@ -3190,6 +2749,7 @@ function spawnLost(em, building) {
   if (_lostThrottle[key] && now - _lostThrottle[key] < 4000) return;
   _lostThrottle[key] = now;
 
+  // Find the building's DOM element to anchor the animation near it
   const wi = document.getElementById('world-inner');
   const slots = wi.querySelectorAll('.bs');
   const el = slots[building.slot];
@@ -3213,7 +2773,7 @@ function spawnLost(em, building) {
 loadGame();
 updateUI();renderBuildings();
 setTimeout(tick,1000);
-showToast('Welcome to Kingdom of Trash! 🗑️');
+showToast('Welcome to Kingdom of Trash! 🗑️ Tap 🏰 to inspect your Castle.');
     </script>
 </body>
 </html>
